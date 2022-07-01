@@ -11,7 +11,8 @@ import {
 } from "expo-file-system"
 import createMusic from "./../../libs/create-music"
 import DatabaseContext from "../../Context/DatabaseContext"
-import { createFinishDownload } from "../../store/actions/downloadReducers"
+import { createCancelDownload, createFinishDownload } from "../../store/actions/downloadReducers"
+import deleteMusicFileSystem from './../../libs/delete-music-file-system'
 
 interface DownloadBannerProps {}
 
@@ -125,7 +126,28 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
     return <></>
   }
 
-  const onCancelDownload = () => {}
+  const onCancelDownload = () => {
+
+    downloadResumableRef.current?.cancelAsync()
+    .then(() => {
+      console.log('> download has been canceled');
+      deleteMusicFileSystem(filenameRef.current || "")
+      .then(() => {
+        console.log("> local file partial download has been deleted");
+
+        filenameRef.current = null
+        downloadAwaitRef.current = {
+          totalBytesExpectedToWrite: 0,
+          totalBytesWritten: 0
+        }
+
+        setCurrentDownload(null);
+
+        dispatch(createCancelDownload(currentDownload.youtubeId));
+      })
+    })
+
+  }
 
   return (
     <Surface>
