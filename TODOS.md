@@ -9,7 +9,7 @@
 - [x] folder `./libs` should create file `delete-playlist.ts`.
 - [x] folder `./libs` should create file `delete-music-file-system.ts`.
 - [x] component `CreatePlaylist` when press button create before validate input from virtual keyboard not work *(playlist cant be empty)*.
-- [ ] screen `Playlist` not refresh after a download finish, fix it with create reducers `playlistsReducers`.
+- [x] screen `Playlist` not refresh after a download finish, fix it with create reducers `musicsReducers`.
 - [ ] component `PlayBanner` emit **can't perform React state...** during `onCancel` action, free memory (unload audio) before dispatch cancel action.
 - [ ] component `Search` should provide API data **step-by-step** *(musics, albums, artists)* replace `Promise.all` with *standalone promises*.
 - [ ] component `DownloadBanner` should implement action `onCancelDownload`.

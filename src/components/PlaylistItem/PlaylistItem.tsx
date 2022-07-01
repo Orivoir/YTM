@@ -1,9 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import * as React from "react"
-import { ColorPropType, View } from "react-native"
+import { DeviceEventEmitter, View } from "react-native"
 import Swipable from "react-native-gesture-handler/Swipeable"
 import { Avatar, Card, IconButton, Surface, Text, useTheme } from "react-native-paper"
 import DatabaseContext from "../../Context/DatabaseContext"
+import { useAppSelector } from "../../hooks/redux"
 import getMusicsByPlaylist from "../../libs/get-musics-by-playlist"
 import splitText from "../../libs/splitText"
 import ConfirmAction from "../ConfirmAction/ConfirmAction"
@@ -34,6 +35,8 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 
   const [isOpenDetails, setIsOpenDetails] = React.useState<boolean>(false)
 
+  const download = useAppSelector(state => state.download);
+
   const [isOpenConfirmDelete, setIsOpenConfirmDelete] = React.useState<boolean>(false)
 
   const thumbnailRef = React.useRef<string | null>(null)
@@ -52,7 +55,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
       .catch((sqlError) => {
         console.log("> cant read musics from SQLite with: ", sqlError)
       })
-  }, [id])
+  }, [id, download])
 
   const onOpenPlaylist = () => {
     setIsOpenDetails(true)
@@ -60,7 +63,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 
   const theme = useTheme()
 
-  const swipableRef = React.useRef<Swipable | null>(null)
+  const swipableRef = React.useRef<Swipable | null>(null);
 
   return (
     <>

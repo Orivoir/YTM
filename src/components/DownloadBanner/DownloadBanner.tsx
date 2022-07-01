@@ -90,8 +90,8 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
             })
               .then(insertedId => {
                 console.log(`> create new music at SQLite table with id: ${insertedId}`)
-                console.log(`> download local file: ${filenameRef.current}`)
-                console.log(`> download size: ${(downloadAwaitRef.current.totalBytesExpectedToWrite / 1000000).toFixed(3)}MB`)
+                console.log(`> create local file: ${filenameRef.current}`)
+                console.log(`> file size: ${(downloadAwaitRef.current.totalBytesExpectedToWrite / 1000000).toFixed(3)}MB`)
 
                 filenameRef.current = null
                 downloadAwaitRef.current = {
