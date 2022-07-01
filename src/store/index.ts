@@ -3,11 +3,13 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit"
 import downloadReducers from "./reducers/downloadReducers"
 import searchDetailsReducers from "./reducers/searchDetailsReducers"
 import playLocalReducers from "./reducers/playLocalReducers"
+import playlistsReducers from "./reducers/playlistsReducer"
 
 const combinedReducers = combineReducers({
   download: downloadReducers,
   searchDetails: searchDetailsReducers,
-  playLocal: playLocalReducers
+  playLocal: playLocalReducers,
+  playlists: playlistsReducers
 })
 
 const store = configureStore({
