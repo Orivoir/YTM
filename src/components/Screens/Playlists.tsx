@@ -12,32 +12,31 @@ import styles from "./../styles"
 import CreatePlaylist from "../CreatePlaylist/CreatePlaylist"
 import { FlatList } from "react-native-gesture-handler"
 import PlaylistItem from "../PlaylistItem/PlaylistItem"
+import { useAppSelector } from "../../hooks/redux"
+import { useDispatch } from "react-redux"
+import {createAddMultiple} from './../../store/actions/playlistsActions'
+
 
 const Playlists: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Playlists">> = () => {
-  const database = React.useContext<WebSQLDatabase>(DatabaseContext)
 
-  const [playlists, setPlaylists] = React.useState<{id: number, name: string}[]>([])
+  const playlists = useAppSelector(state => state.playlists);
+  const dispatch = useDispatch();
+
+  const database = React.useContext(DatabaseContext);
+
   const [isOpenCreatePlaylist, setIsOpenCreatePlaylist] = React.useState<boolean>(false)
 
   const onOpenCreatePlaylist = () => {
     setIsOpenCreatePlaylist(true)
   }
 
-  const onRefreshPlaylist = () => {
-    console.log("> refresh playlist")
-    getPlaylists(database)
-      .then(rows => {
-        console.log(rows)
-        setPlaylists(rows._array)
-      })
-      .catch(error => {
-        console.log("> cant read playlist from SQLite with: ", error)
-      })
-  }
-
   React.useEffect(() => {
-    onRefreshPlaylist()
-  }, [])
+    getPlaylists(database)
+    .then(rows => {
+      const _playlists = rows._array;
+      dispatch(createAddMultiple(_playlists));
+    })
+  }, []);
 
   return (
     <Surface style={styles.screenContainer}>
@@ -67,7 +66,6 @@ const Playlists: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Pla
 
       <CreatePlaylist
         open={isOpenCreatePlaylist}
-        onCreated={onRefreshPlaylist}
         onClose={() => (
           setIsOpenCreatePlaylist(false)
         )} />

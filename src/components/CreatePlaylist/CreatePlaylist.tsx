@@ -7,19 +7,21 @@ import styles from "./../styles/index"
 import createPlaylist from "./../../libs/create-playlist"
 import { WebSQLDatabase } from "expo-sqlite"
 import DatabaseContext from "../../Context/DatabaseContext"
+import { useAppDispatch } from "../../hooks/redux"
+import {createAddSingle} from './../../store/actions/playlistsActions'
 
 interface CreatePlaylistProps {
   open: boolean;
   onClose: () => void;
-  onCreated: (newPlaylist: {id: number, name: string}) => void;
 }
 
 const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
   open,
   onClose,
-  onCreated
 }) => {
   const database = React.useContext<WebSQLDatabase>(DatabaseContext)
+
+  const dispatch = useAppDispatch();
 
   const [error, setError] = React.useState<string | null>(null)
   const [pendingCreate, setPendingCreate] = React.useState(false)
@@ -56,7 +58,10 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
         .then(insertedId => {
           if (typeof insertedId === "number") {
             console.log("> new playlist created")
-            onCreated({ id: insertedId, name: playlistName })
+
+            const playlistCreated = { id: insertedId, name: playlistName };
+
+            dispatch(createAddSingle(playlistCreated));
           } else {
             console.log("> playlist has been create BUT cant get inserted id")
           }
