@@ -1,0 +1,48 @@
+{
+    "globals": {
+        "JSX": "readonly",
+        "RequestInit": "readonly"
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "env": {
+        "react-native/react-native": true
+    },
+    "extends": [
+        "plugin:react/recommended",
+        "plugin:react-native/all",
+        "standard"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "react-native",
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "semi": [
+            "error",
+            "never"
+        ],
+        "quotes": [
+            "error",
+            "double",
+            {"allowTemplateLiterals": true}
+        ],
+
+        // emit Error: Couldn't find a Program: Rule: "react-native/no-raw-text"
+        // @see (https://github.com/Intellicode/eslint-plugin-react-native/issues/270)
+        // @see (https://github.com/Intellicode/eslint-plugin-react-native/issues/270#issuecomment-800243398)
+        "react-native/no-raw-text": "off"
+    }
+}
