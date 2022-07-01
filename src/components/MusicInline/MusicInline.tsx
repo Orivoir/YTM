@@ -1,9 +1,12 @@
 import * as React from "react"
 import { View } from "react-native"
-import { Avatar, IconButton, Text, Title } from "react-native-paper"
+import { Avatar, HelperText, IconButton, Text, Title } from "react-native-paper"
 import api, { MusicVideoAPI } from "../../api/ytm-api"
+import { useAppDispatch } from "../../hooks/redux"
+import useCanDownload from "../../hooks/useCanDownload"
 import useSelectPlaylist from "../../hooks/useSelectPlaylist"
 import splitText from "../../libs/splitText"
+import { createAddDownload } from "../../store/actions/downloadReducers"
 import TextCompose from "../TextCompose/TextCompose"
 
 interface MusicInlineProps {
@@ -17,15 +20,22 @@ const MusicInline: React.FC<MusicInlineProps> = ({
     musicTitle: music.title || ""
   })
 
+  const dispatch = useAppDispatch();
+
+  const {canDownload} = useCanDownload(music.youtubeId || "");
+
   const onDownload = (playlist: {id: number, name: string}) => {
-    console.log(`@TODO: dispatch download with (
-      youtubeId: ${music.youtubeId},
-      ownerName: ${music.artists ? music.artists[0].name : ""},
-      remote: ${api.getStreamUrl(music.youtubeId || "")},
-      title: ${music.title},
-      thumbnail: ${music.thumbnailUrl},
-      playlistId: ${playlist.id}
-    )`)
+    console.log("> add new download");
+
+    dispatch(createAddDownload({
+      ownerName: music.artists ? music.artists[0].name : "",
+      playlistId: playlist.id,
+      remote: api.getStreamUrl(music.youtubeId || ""),
+      title: music.title || "",
+      thumbnail: music.thumbnailUrl || "",
+      youtubeId: music.youtubeId || ""
+    }));
+
   }
 
   React.useEffect(() => {
@@ -53,7 +63,11 @@ const MusicInline: React.FC<MusicInlineProps> = ({
       </View>
 
       <View>
-        <IconButton icon="download" size={24} onPress={onOpen} />
+        <IconButton
+          disabled={!canDownload}
+          icon="download"
+          size={24}
+          onPress={onOpen} />
       </View>
 
     </View>

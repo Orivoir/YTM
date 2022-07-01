@@ -2,7 +2,7 @@
 
 ## Non-Render todos:
 
-- [ ] component `MusicInline` should implement callback `onDownload`.
+- [x] component `MusicInline` should implement callback `onDownload`.
 - [ ] screen `Search` cancel search button not work.
 - [ ] screen `Search` should implement action search from `Chip` suggestions.
 - [ ] component `PlaylistItem` should implement delete playlist action, with `SwipeTrash` component.
