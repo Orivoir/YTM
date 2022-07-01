@@ -4,7 +4,6 @@ import { Button, HelperText, Modal, Portal, Surface, TextInput } from "react-nat
 import ModalHeader from "../ModalHeader/ModalHeader"
 
 import styles from "./../styles/index"
-import InputPlaylist from "./InputPlaylist"
 import createPlaylist from "./../../libs/create-playlist"
 import { WebSQLDatabase } from "expo-sqlite"
 import DatabaseContext from "../../Context/DatabaseContext"
@@ -22,17 +21,11 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
 }) => {
   const database = React.useContext<WebSQLDatabase>(DatabaseContext)
 
-  const playlistNameRef = React.useRef<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [pendingCreate, setPendingCreate] = React.useState(false)
+  const [playlistName, setPlaylistName] = React.useState<string>("");
 
   const PATTERN_PLAYLIST = React.useMemo(() => /^[a-z\d \-]{2,32}$/i, [])
-
-  React.useEffect(() => {
-    return () => {
-      playlistNameRef.current = null
-    }
-  })
 
   const onValidPlaylistName = () => {
     setError(null)
@@ -42,7 +35,16 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
     setError("playlist name invalid.")
   }
 
+  const checkPlaylistName = (playlistName: string) => {
+    if(PATTERN_PLAYLIST.test(playlistName)) {
+      onValidPlaylistName();
+    } else {
+      onInvalidPlaylistName();
+    }
+  }
+
   const onCreatePlaylist = (playlistName: string) => {
+
     if (!playlistName.length) {
       setError("playlist name cant be empty.")
     } else if (!canSubmit) {
@@ -68,7 +70,7 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
     }
   }
 
-  const canSubmit = !pendingCreate && !error
+  const canSubmit = !pendingCreate && !error;
 
   return (
     <Portal>
@@ -81,22 +83,31 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
             <View style={{
               marginVertical: 4
             }}>
-              <InputPlaylist
-                onBlur={playlistName => {
-                  playlistNameRef.current = playlistName
-                }}
-                pattern={PATTERN_PLAYLIST}
-                onValid={onValidPlaylistName}
-                onInvalid={onInvalidPlaylistName}
-                onSubmit={onCreatePlaylist} />
+              <TextInput
+                error={!!error}
+                right={(
+                  <TextInput.Affix text={`${playlistName.length}/32`} />
+                )}
+                value={playlistName}
+                placeholder='playlist'
+                blurOnSubmit
+                onSubmitEditing={() => onCreatePlaylist(playlistName)}
+                onChangeText={(text) => {
+                  setPlaylistName(text)
+                  checkPlaylistName(text);
+                }} />
 
                 <HelperText type="error" visible={!!error}>
                   {error}
                 </HelperText>
 
-                <Button mode="contained" disabled={!canSubmit} icon="plus" onPress={() => {
-                  onCreatePlaylist(playlistNameRef.current || "")
-                }}>
+                <Button
+                  mode="contained"
+                  disabled={!canSubmit}
+                  icon="plus"
+                  onPress={() => {
+                    onCreatePlaylist(playlistName);
+                  }}>
                   create
                 </Button>
             </View>
