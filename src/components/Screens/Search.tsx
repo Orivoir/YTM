@@ -64,11 +64,18 @@ const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search
   }
 
   const abortSearchRef = React.useRef<AbortController | null>(null)
+  const onSearchRef = React.useRef<(query: string) => void>(() => {});
+
+  const onGetTriggerSearch = React.useCallback((onSearch: (query: string) => void) => {
+    console.log("> has get onSearch");
+    onSearchRef.current = onSearch;
+  } ,[])
 
   return (
     <View style={StyleSheet.compose<ViewStyle>(styles.screenContainer, { flex: 1 })}>
       <View style={{ flex: 1 }}>
         <SearchBar
+          onGetTriggerSearch={onGetTriggerSearch}
           onNewAlbums={albums => {
             onNextStepSearch("album")
             setItems(currentItems => ({...currentItems, albums}))
@@ -103,8 +110,8 @@ const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search
             <View>
               <FlatList
                 renderItem={({ item }) => (
-                  <Chip onPress={() => {
-                    console.log(`@TODO: search from chip for: ${item}`)
+                  <Chip disabled={isPending} onPress={() => {
+                    onSearchRef.current(item);
                   }}>{item}</Chip>
                 )}
                 horizontal

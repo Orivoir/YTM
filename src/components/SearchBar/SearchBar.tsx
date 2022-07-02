@@ -12,6 +12,7 @@ interface SearchBarProps {
   onStartPending?: () => void;
   onFetchError?: (reason: any) => void;
   onNewAbortController?: (abortController: AbortController) => void;
+  onGetTriggerSearch?: (onSearch: (query: string) => void) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -21,7 +22,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onFetchError = () => {},
   onSubmitSearch = () => true,
   onNewAbortController = () => {},
-  onStartPending=() => {}
+  onStartPending=() => {},
+  onGetTriggerSearch= () => {}
 }) => {
   const [searchQuery, setSearchQuery] = React.useState<string>("")
 
@@ -38,6 +40,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
       abortSearch.current.abort()
     }
   }, [])
+
+  React.useEffect(() => {
+    onGetTriggerSearch(search);
+  }, [onGetTriggerSearch]);
 
   const search = (query: string) => {
     if (!onSubmitSearch(query)) {
