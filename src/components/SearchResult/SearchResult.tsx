@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ScrollView } from "react-native"
+import { ListViewBase, ScrollView } from "react-native"
 import type { AlbumPreviewAPI, AlbumTypeAPI, ArtistPreviewAPI, MusicVideoAPI } from "../../api/ytm-api"
 import MusicDetails from "../MusicDetails/MusicDetails"
 import SearchList from "../SearchList/SearchList"
@@ -8,6 +8,12 @@ interface SearchResultProps {
   albums: AlbumPreviewAPI[];
   musics: MusicVideoAPI[];
   artists: ArtistPreviewAPI[];
+
+  pendingStatus: {
+    isPendingAlbums: boolean;
+    isPendingArtists: boolean;
+    isPendingMusics: boolean;
+  }
 }
 
 export type SearchItemHelper = {
@@ -30,7 +36,8 @@ export type SearchItemType = {
 const SearchResult: React.FC<SearchResultProps> = ({
   albums,
   musics,
-  artists
+  artists,
+  pendingStatus
 }) => {
   const isAlbum: (details: AlbumPreviewAPI | MusicVideoAPI | ArtistPreviewAPI) => details is AlbumPreviewAPI = (details): details is AlbumPreviewAPI => {
     return !!(details as AlbumPreviewAPI).albumId
@@ -84,11 +91,31 @@ const SearchResult: React.FC<SearchResultProps> = ({
     albumsNormalized
   ])
 
+  const isPending = () => (
+    !pendingStatus.isPendingAlbums ||
+    !pendingStatus.isPendingArtists ||
+    !pendingStatus.isPendingMusics
+  )
+
+  const resultsOrdered =  !isPending() ? results: results
+  .map((result, index): {index: number; status: number} => (
+    result.type === "Albums" && !pendingStatus.isPendingAlbums ? {index, status: 1}:
+    result.type === "Artists" && !pendingStatus.isPendingArtists ? {index, status: 1}:
+    result.type === "Musics" && !pendingStatus.isPendingMusics ? {index, status: 1}: {index, status: 0}
+  ))
+  .sort((lv, rv) => (
+    rv.status - lv.status
+  ))
+  .map(order => (
+    results[order.index]
+  ));
+
   return (
     <>
       <ScrollView>
-        {results.map((result, index) => (
+        {resultsOrdered.map((result, index) => (
           <SearchList
+            pendingStatus={pendingStatus}
             type={result.type}
             items={result.items}
             key={index} />

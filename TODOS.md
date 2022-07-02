@@ -11,7 +11,7 @@
 - [x] component `CreatePlaylist` when press button create before validate input from virtual keyboard not work *(playlist cant be empty)*.
 - [x] screen `Playlist` not refresh after a download finish, fix it with create reducers `musicsReducers`.
 - [ ] component `PlayBanner` emit **can't perform React state...** during `onCancel` action, free memory (unload audio) before dispatch cancel action.
-- [ ] component `Search` should provide API data **step-by-step** *(musics, albums, artists)* replace `Promise.all` with *standalone promises*.
+- [x] component `Search` should provide API data **step-by-step** *(musics, albums, artists)* replace `Promise.all` with *standalone promises*.
 - [x] component `DownloadBanner` should implement action `onCancelDownload`.
 - [ ] component `DownloadBanner` should be refactoring *(200 lines)*, download context can be provide from a custom hook.
 - [ ] reducers `downloadReducers` should implement a action **"ADD_MULTIPLE_DOWNLOAD"** with a array of `DownloadStateItem` as value.

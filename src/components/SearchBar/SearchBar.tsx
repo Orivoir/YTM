@@ -4,24 +4,24 @@ import { Searchbar as PaperSearchbar } from "react-native-paper"
 import api, { AlbumPreviewAPI, ArtistPreviewAPI, MusicVideoAPI } from "../../api/ytm-api"
 
 interface SearchBarProps {
-  onNewItems: (items: {
-    artists: ArtistPreviewAPI[],
-    musics: MusicVideoAPI[],
-    albums: AlbumPreviewAPI[]
-  }) => void;
+  onNewAlbums: (albums: AlbumPreviewAPI[]) => void;
+  onNewMusics: (musics: MusicVideoAPI[]) => void;
+  onNewArtists: (artists: ArtistPreviewAPI[]) => void;
 
   onSubmitSearch?: (query: string) => boolean
-  onTogglePending?: (isPending: boolean) => void;
+  onStartPending?: () => void;
   onFetchError?: (reason: any) => void;
   onNewAbortController?: (abortController: AbortController) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  onNewItems,
-  onTogglePending = () => {},
+  onNewAlbums,
+  onNewArtists,
+  onNewMusics,
   onFetchError = () => {},
   onSubmitSearch = () => true,
-  onNewAbortController = () => {}
+  onNewAbortController = () => {},
+  onStartPending=() => {}
 }) => {
   const [searchQuery, setSearchQuery] = React.useState<string>("")
 
@@ -33,9 +33,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   React.useEffect(() => {
     abortSearch.current = new AbortController()
-
     onNewAbortController(abortSearch.current)
-
     return () => {
       abortSearch.current.abort()
     }
@@ -46,33 +44,37 @@ const SearchBar: React.FC<SearchBarProps> = ({
       return
     }
 
-    onTogglePending(true)
+    onStartPending();
 
-    Promise.all([
-      api.searchAlbums(query, { signal: abortSearch.current.signal }),
-      api.searchMusics(query, { signal: abortSearch.current.signal }),
-      api.searchArtists(query, { signal: abortSearch.current.signal })
-    ])
-      .then(responses => {
-        console.log("> has search fetch with success")
+    api.searchAlbums(query, { signal: abortSearch.current.signal })
+    .then(({albums}) => {
+      console.log("> has search fetch albums with success")
+      onNewAlbums(albums);
+    })
+    .catch(error => {
+      console.log("> cant fetch search albums with: ", error)
+      onFetchError(error)
+    })
 
-        const albums = responses[0].albums
-        const musics = responses[1].musics
-        const artists = responses[2].artists
+    api.searchMusics(query, { signal: abortSearch.current.signal })
+    .then(({musics}) => {
+      console.log("> has search fetch musics with success")
+      onNewMusics(musics);
+    })
+    .catch(error => {
+      console.log("> cant fetch search musics with: ", error)
+      onFetchError(error)
+    })
 
-        onNewItems({
-          albums,
-          artists,
-          musics
-        })
-      })
-      .catch(firstError => {
-        console.log("> cant fetch search with: ", firstError)
-        onFetchError(firstError)
-      })
-      .finally(() => {
-        onTogglePending(false)
-      })
+    api.searchArtists(query, { signal: abortSearch.current.signal })
+    .then(({artists}) => {
+      console.log("> has search fetch artists with success")
+      onNewArtists(artists);
+    })
+    .catch(error => {
+      console.log("> cant fetch search artists with: ", error)
+      onFetchError(error)
+    })
   }
 
   const onSearch = () => {
