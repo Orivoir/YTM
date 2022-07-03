@@ -10,6 +10,7 @@ import splitText from "../../libs/splitText"
 import ConfirmAction from "../ConfirmAction/ConfirmAction"
 import PlaylistDetails from "../PlaylistDetails/PlaylistDetails"
 import SwipeTrash from "../SwipeTrash/SwipeTrash"
+import deletePlaylist from "./../../libs/delete-playlist"
 
 interface PlaylistItemProps {
   id: number;
@@ -41,29 +42,54 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 
   const thumbnailRef = React.useRef<string | null>(null)
 
-  React.useEffect(() => {
-    getMusicsByPlaylist(database, id)
-      .then(rows => {
-        rows._array.forEach(music => {
-          if (typeof music.thumbnail === "string") {
-            thumbnailRef.current = music.thumbnail
-          }
-        })
+  const isDeletedRef = React.useRef<boolean>(false);
 
-        setMusics(rows._array)
+  const theme = useTheme()
+
+  const swipableRef = React.useRef<Swipable | null>(null);
+
+  const refreshMusics = () => {
+    getMusicsByPlaylist(database, id)
+    .then(rows => {
+      rows._array.forEach(music => {
+        if (typeof music.thumbnail === "string") {
+          thumbnailRef.current = music.thumbnail
+        }
       })
-      .catch((sqlError) => {
-        console.log("> cant read musics from SQLite with: ", sqlError)
-      })
+
+      setMusics(rows._array)
+    })
+    .catch((sqlError) => {
+      console.log("> cant read musics from SQLite with: ", sqlError)
+    })
+  }
+
+  React.useEffect(() => {
+    refreshMusics();
   }, [id, download])
+
+  if(isDeletedRef.current) {
+    return <></>;
+  }
 
   const onOpenPlaylist = () => {
     setIsOpenDetails(true)
   }
 
-  const theme = useTheme()
+  const onDeletePlaylist = () => {
+    isDeletedRef.current = true;
+    setIsOpenConfirmDelete(false);
 
-  const swipableRef = React.useRef<Swipable | null>(null);
+    deletePlaylist(database, id)
+    .then(countMusicsDeleted => {
+
+      console.log(`> has delete playlist with: ${countMusicsDeleted} musics`);
+
+    })
+    .catch(error => {
+      console.log("> cant delete playlist with: ", error);
+    })
+  }
 
   return (
     <>
@@ -92,10 +118,10 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
             }}>
               {thumbnailRef.current
                 ? (
-                <Avatar.Image size={48} source={{ uri: thumbnailRef.current }} />
+                <Avatar.Image size={32} source={{ uri: thumbnailRef.current }} />
                   )
                 : (
-                <Avatar.Text size={48} label={name.charAt(0)} />
+                <Avatar.Text size={32} label={name.charAt(0)} />
                   )}
             </View>
 
@@ -133,7 +159,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
             title: "remove",
             type: "unsafe",
             onPress: () => {
-              console.log(`@TODO: delete playlist ${id}:${name}`)
+              onDeletePlaylist();
             }
           }}
           title={`playlist contains ${musics.length} musics`}

@@ -5,7 +5,7 @@
 - [x] component `MusicInline` should implement callback `onDownload`.
 - [ ] screen `Search` cancel search button not work.
 - [ ] screen `Search` should implement action search from `Chip` suggestions.
-- [ ] component `PlaylistItem` should implement delete playlist action, with `SwipeTrash` component.
+- [x] component `PlaylistItem` should implement delete playlist action, with `SwipeTrash` component.
 - [x] folder `./libs` should create file `delete-playlist.ts`.
 - [x] folder `./libs` should create file `delete-music-file-system.ts`.
 - [x] component `CreatePlaylist` when press button create before validate input from virtual keyboard not work *(playlist cant be empty)*.
