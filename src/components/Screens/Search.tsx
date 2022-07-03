@@ -4,10 +4,11 @@ import type { BottomTabParamsList } from "./../Routing"
 import { ActivityIndicator, Button, Chip, Surface, Title } from "react-native-paper"
 
 import styles from "../styles"
-import { View, StyleSheet, ViewStyle, FlatList, ScrollView } from "react-native"
+import { View, StyleSheet, ViewStyle, FlatList, ScrollView, DeviceEventEmitter } from "react-native"
 
 import SearchBar from "../SearchBar/SearchBar"
 import SearchList from "../SearchList/SearchList"
+import { EVENT_SEARCH_EXEC } from "../../constant"
 
 const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search">> = () => {
 
@@ -26,8 +27,9 @@ const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search
               <FlatList
                 renderItem={({ item }) => (
                   <Chip onPress={() => {
-                    console.log(`@TODO: search from chip suggestions with: ${item}`);
-                    // onSearchRef.current(item);
+                    DeviceEventEmitter.emit(EVENT_SEARCH_EXEC, {
+                      query: item
+                    })
                   }}>{item}</Chip>
                 )}
                 horizontal
