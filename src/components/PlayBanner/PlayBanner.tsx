@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons"
 import SwipeTrash from "../SwipeTrash/SwipeTrash"
 import TextCompose from "../TextCompose/TextCompose"
 import useBatchOffsetTime from "../../hooks/useBatchOffsetTime"
+import VolumeAction from "./VolumeAction"
 
 interface PlayBannerProps {}
 
@@ -121,7 +122,11 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
             </View>
           </View>
 
-          <View>
+          <View style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center"
+          }}>
             <View style={{
               display: "flex",
               flexDirection: "column"
@@ -148,6 +153,8 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
                   size={24} />
               </View>
             </View>
+
+            {soundRef.current && <VolumeAction sound={soundRef.current} />}
           </View>
 
         </View>
