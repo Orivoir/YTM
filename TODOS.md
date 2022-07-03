@@ -27,7 +27,7 @@
 
 ## Render todos:
 
-- [ ] component `Timeline` should replace usage of deprecated native component `Slider`.
+- [x] component `Timeline` should replace usage of deprecated native component `Slider`.
 - [ ] component `Timeline` set current time with *non drag-and-drop* (only press) not work.
 - [ ] component `MusicInline` can has *large text* cause outside area.
 - [ ] component `DownloadBanner` render to big, should be refactoring.

@@ -1,7 +1,8 @@
 import { AVPlaybackStatus } from "expo-av"
 import { Sound } from "expo-av/build/Audio"
 import * as React from "react"
-import { Slider } from "react-native"
+import Slider from '@react-native-community/slider';
+
 
 interface TimelineProps {
   sound: Sound;
