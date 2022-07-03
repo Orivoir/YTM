@@ -1,6 +1,7 @@
 import * as React from "react"
 import { DeviceEventEmitter } from "react-native"
 import { Card, TouchableRipple } from "react-native-paper"
+import { EVENT_SEARCH_ITEM_DETAILS } from "../../constant";
 import { SearchItemDetailsCallback } from "../../libs/normalize-search-items"
 
 interface SearchItemProps {
@@ -26,7 +27,7 @@ const SearchItem: React.FC<SearchItemProps> = ({
   const onPress = () => {
     const details = getDetails()
 
-    DeviceEventEmitter.emit("search.item.details", details);
+    DeviceEventEmitter.emit(EVENT_SEARCH_ITEM_DETAILS, details);
   }
 
   return (

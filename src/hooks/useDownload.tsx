@@ -8,6 +8,7 @@ import deleteMusicFileSystem from '../libs/delete-music-file-system';
 import React from 'react';
 
 import {DeviceEventEmitter} from 'react-native'
+import { EVENT_DOWNLOAD_PROGRESS_UPDATE } from '../constant';
 
 export type ProgressState = {
   percent: number;
@@ -83,7 +84,7 @@ export default function useDownload(options: UseDownloadOptions) {
 
       const pct = (params.totalBytesWritten / params.totalBytesExpectedToWrite) * 100;
 
-      DeviceEventEmitter.emit("progress.update", {
+      DeviceEventEmitter.emit(EVENT_DOWNLOAD_PROGRESS_UPDATE, {
         percent: pct,
         totalBytesExpectedToWrite: params.totalBytesExpectedToWrite,
         totalBytesWritten: params.totalBytesWritten,

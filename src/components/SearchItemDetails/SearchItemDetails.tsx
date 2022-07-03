@@ -2,6 +2,7 @@ import * as React from "react"
 import {DeviceEventEmitter} from "react-native"
 import { Modal, Portal, Surface } from "react-native-paper"
 import type { AlbumPreviewAPI, ArtistPreviewAPI, MusicVideoAPI } from "../../api/ytm-api"
+import { EVENT_SEARCH_ITEM_DETAILS } from "../../constant"
 import AlbumDetails from "../AlbumDetails/AlbumDetails"
 import ArtistDetails from "../ArtistDetails/ArtistDetails"
 import MusicDetails from "../MusicDetails/MusicDetails"
@@ -54,7 +55,7 @@ const SearchItemDetails: React.FC<SearchItemDetailsProps> = () => {
   }
 
   React.useEffect(() => {
-    const subscription = DeviceEventEmitter.addListener("search.item.details", onSearchItemDetails);
+    const subscription = DeviceEventEmitter.addListener(EVENT_SEARCH_ITEM_DETAILS, onSearchItemDetails);
 
     return () => {
       subscription.remove();

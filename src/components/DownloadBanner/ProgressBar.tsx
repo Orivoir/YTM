@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { View, DeviceEventEmitter } from 'react-native';
 import { ProgressBar as PaperProgressBar } from 'react-native-paper';
+import { EVENT_DOWNLOAD_PROGRESS_UPDATE } from '../../constant';
 import { ProgressState } from '../../hooks/useDownload';
 
 interface ProgressBarProps {}
@@ -20,7 +21,7 @@ const ProgressBar: React.FC<ProgressBarProps> = () => {
 
   React.useEffect(() => {
 
-    const subscription = DeviceEventEmitter.addListener("progress.update", onProgressUpdate);
+    const subscription = DeviceEventEmitter.addListener(EVENT_DOWNLOAD_PROGRESS_UPDATE, onProgressUpdate);
 
     return () => {
       subscription.remove()

@@ -1,6 +1,7 @@
 import { AVPlaybackStatus } from "expo-av";
 import { Sound } from "expo-av/build/Audio";
 import React from "react";
+import { AUDIO_FAST_OFFSET_BATCH_COULDOWN_DURATION, AUDIO_FAST_OFFSET_TIME_DURATION } from "../constant";
 
 export default function useBatchOffsetTime(sound: Sound | null = null) {
 
@@ -36,7 +37,7 @@ export default function useBatchOffsetTime(sound: Sound | null = null) {
 
   const onOffsetTime = (direction: "backward" | "forward") => {
 
-    const offset = (1000 * 10) * (direction === "backward" ? -1 : 1)
+    const offset = AUDIO_FAST_OFFSET_TIME_DURATION * (direction === "backward" ? -1 : 1)
 
     // batch multiple offset current time
     accumulatedOffsetTimeRef.current += offset;
@@ -44,14 +45,13 @@ export default function useBatchOffsetTime(sound: Sound | null = null) {
     if(!isEngagedCouldownRef.current) {
       isEngagedCouldownRef.current = true;
 
-      couldownID.current = setTimeout(onBatchOffsetTime, 500);
+      couldownID.current = setTimeout(onBatchOffsetTime, AUDIO_FAST_OFFSET_BATCH_COULDOWN_DURATION);
     } else {
-      // @Should reset timeout
 
       if(couldownID.current) {
         clearTimeout(couldownID.current);
       }
-      couldownID.current = setTimeout(onBatchOffsetTime, 500);
+      couldownID.current = setTimeout(onBatchOffsetTime, AUDIO_FAST_OFFSET_BATCH_COULDOWN_DURATION);
     }
   }
 
