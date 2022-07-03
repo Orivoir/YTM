@@ -13,8 +13,7 @@ import PlayAction from "./PlayAction"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import SwipeTrash from "../SwipeTrash/SwipeTrash"
 import TextCompose from "../TextCompose/TextCompose"
-
-const AnimatedView = Animated.createAnimatedComponent(View)
+import useBatchOffsetTime from "../../hooks/useBatchOffsetTime"
 
 interface PlayBannerProps {}
 
@@ -29,9 +28,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
 
   const theme = useTheme()
 
-  const accumulatedOffsetTimeRef = React.useRef<number>(0);
-  const couldownID = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isEngagedCouldownRef = React.useRef<boolean>(false);
+  const {onOffsetTime} = useBatchOffsetTime(soundRef.current || null);
 
   React.useEffect(() => {
     if (playLocalMusic) {
@@ -70,49 +67,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
 
 
   if (!playLocalMusic) {
-    if(couldownID.current) {
-      clearTimeout(couldownID.current);
-    }
     return <></>
-  }
-
-  const onBatchOffsetTime = () => {
-
-    soundRef.current?.getStatusAsync()
-    .then((playbackStatus: AVPlaybackStatus) => {
-      if (playbackStatus.isLoaded) {
-        soundRef.current?.setPositionAsync(
-          playbackStatus.positionMillis + accumulatedOffsetTimeRef.current
-        )
-        .then(() => {
-          console.log(`> offset current time ${accumulatedOffsetTimeRef.current/1000}seconds`)
-          accumulatedOffsetTimeRef.current = 0;
-          isEngagedCouldownRef.current = false;
-        })
-      }
-    })
-
-  }
-
-  const onFastForward = (direction: "backward" | "forward") => {
-
-    const offset = (1000 * 10) * (direction === "backward" ? -1 : 1)
-
-    // batch multiple offset current time
-    accumulatedOffsetTimeRef.current += offset;
-
-    if(!isEngagedCouldownRef.current) {
-      isEngagedCouldownRef.current = true;
-
-      couldownID.current = setTimeout(onBatchOffsetTime, 500);
-    } else {
-      // @Should reset timeout
-
-      if(couldownID.current) {
-        clearTimeout(couldownID.current);
-      }
-      couldownID.current = setTimeout(onBatchOffsetTime, 500);
-    }
   }
 
   const onCancel = () => {
@@ -177,7 +132,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
                 alignItems: "center"
               }}>
                 <IconButton
-                  onPress={() => onFastForward("backward")}
+                  onPress={() => onOffsetTime("backward")}
                   icon="step-backward"
                   size={24} />
 
@@ -188,7 +143,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
                 <View style={{ marginEnd: 8 }} />
 
                 <IconButton
-                  onPress={() => onFastForward("forward")}
+                  onPress={() => onOffsetTime("forward")}
                   icon="step-forward"
                   size={24} />
               </View>
