@@ -10,7 +10,6 @@ import { createCancelLocalMusic } from "../../store/actions/playLocalActions"
 import splitText from "../../libs/splitText"
 import PlayAction from "./PlayAction"
 
-import { RectButton } from "react-native-gesture-handler"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import SwipeTrash from "../SwipeTrash/SwipeTrash"
 import TextCompose from "../TextCompose/TextCompose"
@@ -29,6 +28,10 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
   const [_, forceRefresh] = React.useState<any>()
 
   const theme = useTheme()
+
+  const accumulatedOffsetTimeRef = React.useRef<number>(0);
+  const couldownID = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isEngagedCouldownRef = React.useRef<boolean>(false);
 
   React.useEffect(() => {
     if (playLocalMusic) {
@@ -65,24 +68,51 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
     }
   }, [playLocalMusic])
 
+
   if (!playLocalMusic) {
+    if(couldownID.current) {
+      clearTimeout(couldownID.current);
+    }
     return <></>
   }
 
-  const onFastForward = (direction: "backward" | "forward") => {
-    const offset = (1000 * 10) * (direction === "backward" ? -1 : 1)
+  const onBatchOffsetTime = () => {
 
     soundRef.current?.getStatusAsync()
-      .then((playbackStatus: AVPlaybackStatus) => {
-        if (playbackStatus.isLoaded) {
-          soundRef.current?.setPositionAsync(
-            playbackStatus.positionMillis + offset
-          )
-            .then(() => {
-              console.log(`> offset current time ${direction === "backward" ? "-" : "+"}10 seconds`)
-            })
-        }
-      })
+    .then((playbackStatus: AVPlaybackStatus) => {
+      if (playbackStatus.isLoaded) {
+        soundRef.current?.setPositionAsync(
+          playbackStatus.positionMillis + accumulatedOffsetTimeRef.current
+        )
+        .then(() => {
+          console.log(`> offset current time ${accumulatedOffsetTimeRef.current/1000}seconds`)
+          accumulatedOffsetTimeRef.current = 0;
+          isEngagedCouldownRef.current = false;
+        })
+      }
+    })
+
+  }
+
+  const onFastForward = (direction: "backward" | "forward") => {
+
+    const offset = (1000 * 10) * (direction === "backward" ? -1 : 1)
+
+    // batch multiple offset current time
+    accumulatedOffsetTimeRef.current += offset;
+
+    if(!isEngagedCouldownRef.current) {
+      isEngagedCouldownRef.current = true;
+
+      couldownID.current = setTimeout(onBatchOffsetTime, 500);
+    } else {
+      // @Should reset timeout
+
+      if(couldownID.current) {
+        clearTimeout(couldownID.current);
+      }
+      couldownID.current = setTimeout(onBatchOffsetTime, 500);
+    }
   }
 
   const onCancel = () => {
@@ -148,7 +178,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
               }}>
                 <IconButton
                   onPress={() => onFastForward("backward")}
-                  icon="fast-forward-10"
+                  icon="step-backward"
                   size={24} />
 
                 <View style={{ marginEnd: 8 }} />
@@ -159,7 +189,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
 
                 <IconButton
                   onPress={() => onFastForward("forward")}
-                  icon="fast-forward-10"
+                  icon="step-forward"
                   size={24} />
               </View>
             </View>
