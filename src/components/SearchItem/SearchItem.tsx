@@ -1,16 +1,9 @@
 import * as React from "react"
+import { DeviceEventEmitter } from "react-native"
 import { Card, TouchableRipple } from "react-native-paper"
-import { useAppDispatch } from "../../hooks/redux"
-import { SearchDetailsAction } from "../../store/reducers/searchDetailsReducers"
-import { SearchItemDetailsCallback, SearchItemHelper } from "../SearchResult/SearchResult"
-import {
-  createAlbumSearchDetails,
-  createArtistSearchDetails,
-  createCancel,
-  createMusicSearchDetails
-} from "./../../store/actions/searchDetailsActions"
+import { SearchItemDetailsCallback } from "../../libs/normalize-search-items"
 
-interface SearchItemProps extends SearchItemHelper {
+interface SearchItemProps {
   title: string;
   thumbnailUrl: string;
   subtitle?: string;
@@ -27,29 +20,13 @@ const SearchItem: React.FC<SearchItemProps> = ({
   width = 180,
   id,
   type,
-  getDetails,
-  isAlbum,
-  isArtist,
-  isMusic
+  getDetails
 }) => {
-  const dispatch = useAppDispatch()
 
   const onPress = () => {
     const details = getDetails()
 
-    let action: SearchDetailsAction = createCancel()
-
-    if (isAlbum(details)) {
-      action = createAlbumSearchDetails(details)
-    } else if (isArtist(details)) {
-      action = createArtistSearchDetails(details)
-    } else if (isMusic(details)) {
-      action = createMusicSearchDetails(details)
-    } else {
-      console.log("> cant open details for search item because never find category item")
-    }
-
-    dispatch(action)
+    DeviceEventEmitter.emit("search.item.details", details);
   }
 
   return (

@@ -4,102 +4,17 @@ import type { BottomTabParamsList } from "./../Routing"
 import { ActivityIndicator, Button, Chip, Surface, Title } from "react-native-paper"
 
 import styles from "../styles"
-import { View, StyleSheet, ViewStyle, FlatList } from "react-native"
+import { View, StyleSheet, ViewStyle, FlatList, ScrollView } from "react-native"
 
-import SearchResult from "../SearchResult/SearchResult"
 import SearchBar from "../SearchBar/SearchBar"
-import { AlbumPreviewAPI, ArtistPreviewAPI, MusicVideoAPI } from "../../api/ytm-api"
+import SearchList from "../SearchList/SearchList"
 
 const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search">> = () => {
-  const [items, setItems] = React.useState<{
-    artists: ArtistPreviewAPI[];
-    musics: MusicVideoAPI[];
-    albums: AlbumPreviewAPI[];
-  }>({
-    albums: [],
-    artists: [],
-    musics: []
-  })
-
-  const [isPending, setIsPending] = React.useState<boolean>(false)
-
-  const onCancelSearch = () => {
-    console.log("> abort search")
-
-    // abort network request (reject with error.code === 20)
-    abortSearchRef.current?.abort()
-  }
-
-  const pendingStatus = React.useRef<{
-    isPendingAlbums: boolean;
-    isPendingArtists: boolean;
-    isPendingMusics: boolean;
-  }>({
-    isPendingAlbums: false,
-    isPendingArtists: false,
-    isPendingMusics: false
-  })
-
-  const onNextStepSearch = (type: "album" | "music" | "artist") => {
-
-    switch(type) {
-      case "album":
-        pendingStatus.current.isPendingAlbums = false;
-        break;
-      case "artist":
-        pendingStatus.current.isPendingArtists = false;
-        break;
-      case "music":
-        pendingStatus.current.isPendingMusics = false;
-        break;
-    }
-
-    if(
-      !pendingStatus.current.isPendingAlbums &&
-      !pendingStatus.current.isPendingArtists &&
-      !pendingStatus.current.isPendingMusics
-    ) {
-      setIsPending(false);
-    }
-  }
-
-  const abortSearchRef = React.useRef<AbortController | null>(null)
-  const onSearchRef = React.useRef<(query: string) => void>(() => {});
-
-  const onGetTriggerSearch = React.useCallback((onSearch: (query: string) => void) => {
-    console.log("> has get onSearch");
-    onSearchRef.current = onSearch;
-  } ,[])
 
   return (
     <View style={StyleSheet.compose<ViewStyle>(styles.screenContainer, { flex: 1 })}>
       <View style={{ flex: 1 }}>
-        <SearchBar
-          onGetTriggerSearch={onGetTriggerSearch}
-          onNewAlbums={albums => {
-            onNextStepSearch("album")
-            setItems(currentItems => ({...currentItems, albums}))
-          }}
-          onNewArtists={artists => {
-            onNextStepSearch("artist")
-            setItems(currentItems => ({...currentItems, artists}))
-          }}
-          onNewMusics={musics => {
-            onNextStepSearch("music")
-            setItems(currentItems => ({...currentItems, musics}))
-          }}
-          onNewAbortController={(abortSearch: AbortController) => (
-            abortSearchRef.current = abortSearch
-          )}
-          onStartPending={() => {
-            pendingStatus.current = {
-              isPendingAlbums: true,
-              isPendingArtists: true,
-              isPendingMusics: true
-            }
-            setIsPending(true)
-          }}
-          onSubmitSearch={() => !isPending}  />
+        <SearchBar />
 
         <View style={{
           marginVertical: 8,
@@ -110,8 +25,9 @@ const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search
             <View>
               <FlatList
                 renderItem={({ item }) => (
-                  <Chip disabled={isPending} onPress={() => {
-                    onSearchRef.current(item);
+                  <Chip onPress={() => {
+                    console.log(`@TODO: search from chip suggestions with: ${item}`);
+                    // onSearchRef.current(item);
                   }}>{item}</Chip>
                 )}
                 horizontal
@@ -120,14 +36,16 @@ const Search: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Search
                 data={["Angele", "Maître Gims", "Eminem", "Orelsan", "Niska", "Booba"]} />
               </View>
 
+              <View style={{marginVertical: 4}} />
+
               <View style={{
                 flex: 1
               }}>
-                <SearchResult
-                  pendingStatus={pendingStatus.current}
-                  albums={items.albums}
-                  musics={items.musics}
-                  artists={items.artists} />
+                <ScrollView>
+                  <SearchList type="Musics" />
+                  <SearchList type="Albums" />
+                  <SearchList type="Artists" />
+                </ScrollView>
               </View>
             </View>
 

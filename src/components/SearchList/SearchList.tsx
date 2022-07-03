@@ -1,56 +1,80 @@
 import * as React from "react"
 import { FlatList, View } from "react-native"
 import { ActivityIndicator, Title } from "react-native-paper"
+import { AlbumPreviewAPI, ArtistPreviewAPI, MusicVideoAPI } from "../../api/ytm-api"
+import { useAppSelector } from "../../hooks/redux"
 import SearchItem from "../SearchItem/SearchItem"
-import type { SearchItemType } from "../SearchResult/SearchResult"
+import {
+  normalizeArtists,
+  normalizeAlbums,
+  normalizeMusics
+} from "../../libs/normalize-search-items"
+
+export type SearchItemHelper = {
+  isAlbum: (details: AlbumPreviewAPI | MusicVideoAPI | ArtistPreviewAPI) => details is AlbumPreviewAPI;
+  isArtist: (details: AlbumPreviewAPI | MusicVideoAPI | ArtistPreviewAPI) => details is ArtistPreviewAPI;
+  isMusic: (details: AlbumPreviewAPI | MusicVideoAPI | ArtistPreviewAPI) => details is MusicVideoAPI;
+}
 
 interface SearchListProps {
   type: "Musics" | "Albums" | "Artists";
-  items: SearchItemType[];
-
-  pendingStatus: {
-    isPendingAlbums: boolean;
-    isPendingArtists: boolean;
-    isPendingMusics: boolean;
-  }
 }
 
 const SearchList: React.FC<SearchListProps> = ({
-  items,
-  type,
-  pendingStatus
+  type
 }) => {
 
-  const isPending = (): boolean => {
+  const {items, isPending}: {
+    items: ArtistPreviewAPI[] | AlbumPreviewAPI[] | MusicVideoAPI[];
+    isPending: boolean;
+  } = useAppSelector((state) => {
+    return (
+      type === "Albums" ? {
+        items: state.searchResult.albums,
+        isPending: state.searchResult.pendingState.albums
+      }: type === "Artists" ? {
+        items: state.searchResult.artist,
+        isPending: state.searchResult.pendingState.artists
+      }: {
+        items: state.searchResult.musics,
+        isPending: state.searchResult.pendingState.musics
+      }
+    )
+
+  });
+
+  if(!isPending && items.length === 0) {
+    return <></>;
+  }
+
+  const getNormalizer = () => {
     switch(type) {
       case "Albums":
-        return pendingStatus.isPendingAlbums;
+        return normalizeAlbums;
       case "Artists":
-        return pendingStatus.isPendingArtists;
-      case "Musics":
-        return pendingStatus.isPendingMusics;
+        return normalizeArtists;
       default:
-        return false;
+        return normalizeMusics;
     }
   }
 
-  if(items.length === 0  && !isPending()) {
-    return <></>;
-  }
+  const normalizer = getNormalizer();
+
+  const itemsNormalized = normalizer(items);
 
   return (
     <View>
       <Title>{type}</Title>
-      {isPending() && (
+
+      {isPending ? (
         <View style={{
-          marginVertical: 4,
           display: "flex",
           alignItems: "center",
           justifyContent: "center"
         }}>
           <ActivityIndicator animating size={32} />
         </View>
-      )}
+      ): (
       <FlatList
         keyExtractor={item => item.id?.toString() || ""}
         horizontal
@@ -59,9 +83,6 @@ const SearchList: React.FC<SearchListProps> = ({
         )}
         renderItem={({ item }) => (
           <SearchItem
-            isAlbum={item.isAlbum}
-            isArtist={item.isArtist}
-            isMusic={item.isMusic}
             getDetails={item.getDetails}
             type={type}
             id={item.id}
@@ -69,7 +90,9 @@ const SearchList: React.FC<SearchListProps> = ({
             thumbnailUrl={item.thumbnailUrl || ""}
             subtitle={item.subtitle} />
         )}
-        data={items} />
+        data={itemsNormalized} />
+      )}
+
     </View>
   )
 }
