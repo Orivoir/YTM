@@ -1,7 +1,9 @@
 import * as React from "react"
-import { Image, View } from "react-native"
-import { HelperText, IconButton } from "react-native-paper"
-import useCanDownload from "../../hooks/useCanDownload"
+import { DeviceEventEmitter, Image, View } from "react-native"
+import { HelperText, IconButton, useTheme } from "react-native-paper"
+import { EVENT_DOWNLOAD_PROGRESS_UPDATE } from "../../constant";
+import CircularProgress from 'react-native-circular-progress-indicator'
+import CircularProgressDownload from "../CircularProgressDownload/CircularProgressDownload";
 
 interface DownloadProps {
   thumbnailUrl: string;
@@ -14,7 +16,39 @@ const Download: React.FC<DownloadProps> = ({
   youtubeId,
   onDownload
 }) => {
-  const { canDownload } = useCanDownload(youtubeId)
+  // const { canDownload } = useCanDownload(youtubeId)
+
+  const [downloadProgress, setDownloadProgress] = React.useState<number>(-1);
+
+  const onDownloadStatus = (downloadStatus: {
+    id: string;
+    isFinish: boolean;
+    percent: number
+  }) => {
+
+    if(youtubeId === downloadStatus.id) {
+      if(downloadStatus.isFinish) {
+        setDownloadProgress(-1);
+      } else {
+        setDownloadProgress(downloadStatus.percent);
+      }
+    }
+
+  }
+
+  React.useEffect(() => {
+
+    const subscription = DeviceEventEmitter.addListener(EVENT_DOWNLOAD_PROGRESS_UPDATE, onDownloadStatus);
+
+    return () => {
+      subscription.remove();
+    }
+
+  }, []);
+
+  const canDownload = downloadProgress === -1;
+
+  const theme = useTheme();
 
   return (
     <View style={{
@@ -39,11 +73,16 @@ const Download: React.FC<DownloadProps> = ({
           alignItems: "center",
           justifyContent: "center"
         }}>
-          <IconButton
-            disabled={!canDownload}
-            icon="download"
-            size={24}
-            onPress={onDownload} />
+          {!canDownload ? (
+            <CircularProgressDownload
+              progress={downloadProgress}
+              size={30} />
+          ): (
+            <IconButton
+              icon="download"
+              size={24}
+              onPress={onDownload} />
+          )}
         </View>
 
       </View>
