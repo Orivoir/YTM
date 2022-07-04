@@ -30,25 +30,30 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
   const [playlistChecked, setPlaylistChecked] = React.useState<number>(Infinity)
 
   React.useEffect(() => {
-    setIsPending(true)
+    if(open) {
+      setIsPending(true)
 
-    getPlaylists(database)
-      .then(rows => {
-        playlistsRef.current = rows._array
-      })
-      .catch(error => {
-        console.log("> cant read playlists from SQLite with: ", error)
-      })
-      .finally(() => {
-        setIsPending(false)
-      })
-  }, [])
+      getPlaylists(database)
+        .then(rows => {
+          playlistsRef.current = rows._array
+        })
+        .catch(error => {
+          console.log("> cant read playlists from SQLite with: ", error)
+        })
+        .finally(() => {
+          setIsPending(false)
+        })
+    }
+  }, [open])
 
   return (
     <Portal>
       <Modal visible={open} onDismiss={onClose}>
         <Surface style={styles.modalContainer}>
-          <ModalHeader title="Select playlist" subtitle={`${splitText(musicTitle, 15)} => ${playlistsRef.current.find(p => p.id === playlistChecked)?.name || "?"}`} onClose={onClose} />
+          <ModalHeader
+            title="Select playlist"
+            subtitle={`${splitText(musicTitle, 15)} => ${playlistsRef.current.find(p => p.id === playlistChecked)?.name || "?"}`}
+            onClose={onClose} />
 
           <View style={{
             marginVertical: 4
