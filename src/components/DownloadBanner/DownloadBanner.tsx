@@ -129,7 +129,7 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
     if(currentDownload) {
       console.log("> new item to download");
 
-      startDownload(currentDownload.remote);
+      startDownload(currentDownload.remote, currentDownload.youtubeId);
     }
   }, [currentDownload])
 
