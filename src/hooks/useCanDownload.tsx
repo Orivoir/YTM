@@ -1,13 +1,13 @@
 import { useAppSelector } from "./redux"
 
 export default function useCanDownload (youtubeId: string) {
-  const downloads = useAppSelector(state => state.download)
+  // const downloads = useAppSelector(state => state.download)
 
-  const downloadStatus = downloads.find(download => (
-    download.youtubeId === youtubeId
-  ))
+  // const downloadStatus = downloads.find(download => (
+  //   download.youtubeId === youtubeId
+  // ))
 
   return {
-    canDownload: !downloadStatus
+    canDownload: true
   }
 }
