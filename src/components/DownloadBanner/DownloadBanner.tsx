@@ -43,6 +43,7 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
   const onDownloadFinish = (result: {filename: string}) => {
     console.log("> download success")
 
+    const lastDownloadSizeBytes = downloadSizeBytes.current;
     downloadSizeBytes.current = 0;
 
     if(currentDownload) {
@@ -68,7 +69,7 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
       .then(insertedId => {
         console.log(`> create new music at SQLite table with id: ${insertedId}`)
         console.log(`> create local file: ${result.filename}`)
-        console.log(`> file size: ${(downloadSizeBytes.current / 1000000).toFixed(3)}MB`)
+        console.log(`> file size: ${(lastDownloadSizeBytes / 1000000).toFixed(3)}MB`)
 
         onNextDownload();
       })
