@@ -1,7 +1,9 @@
 import * as React from "react"
-import { FlatList, View } from "react-native"
+import { DeviceEventEmitter, EmitterSubscription, FlatList, View } from "react-native"
 import { ActivityIndicator, Button, Modal, Portal, RadioButton, Surface, Text } from "react-native-paper"
+import { EVENT_CREATE_PLAYLIST } from "../../constant"
 import DatabaseContext from "../../Context/DatabaseContext"
+import useCreatePlaylist from "../../hooks/useCreatePlaylist"
 import getPlaylists from "../../libs/get-playlists"
 import splitText from "../../libs/splitText"
 import ModalHeader from "../ModalHeader/ModalHeader"
@@ -24,18 +26,30 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
 }) => {
   const database = React.useContext(DatabaseContext)
 
-  const playlistsRef = React.useRef<{id: number, name: string}[]>([])
+  const [playlists, setPlaylists] = React.useState<{id: number, name: string}[]>([])
   const [isPending, setIsPending] = React.useState<boolean>(false)
+  const subscriptionRef = React.useRef<EmitterSubscription | null>(null)
 
   const [playlistChecked, setPlaylistChecked] = React.useState<number>(Infinity)
 
+  const {onOpen, render} = useCreatePlaylist();
+
+  const onNewPlaylist = (playlist: {id: number, name: string}) => {
+    setPlaylists(currentPlaylists => ([
+      ...currentPlaylists,
+      playlist
+    ]))
+  }
+
   React.useEffect(() => {
+
     if(open) {
+      subscriptionRef.current = DeviceEventEmitter.addListener(EVENT_CREATE_PLAYLIST, onNewPlaylist)
       setIsPending(true)
 
       getPlaylists(database)
         .then(rows => {
-          playlistsRef.current = rows._array
+          setPlaylists(rows._array);
         })
         .catch(error => {
           console.log("> cant read playlists from SQLite with: ", error)
@@ -43,16 +57,20 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
         .finally(() => {
           setIsPending(false)
         })
+    } else {
+      subscriptionRef.current?.remove()
     }
   }, [open])
 
+
   return (
+    <>
     <Portal>
       <Modal visible={open} onDismiss={onClose}>
         <Surface style={styles.modalContainer}>
           <ModalHeader
             title="Select playlist"
-            subtitle={`${splitText(musicTitle, 15)} => ${playlistsRef.current.find(p => p.id === playlistChecked)?.name || "?"}`}
+            subtitle={`${splitText(musicTitle, 15)} => ${playlists.find(p => p.id === playlistChecked)?.name || "?"}`}
             onClose={onClose} />
 
           <View style={{
@@ -69,7 +87,9 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
               </View>
                 )
               : (
-              <View>
+              <View style={{
+                marginHorizontal: 4
+              }}>
                 <View style={{ marginBottom: 4 }}>
                   <RadioButton.Group
                     onValueChange={value => setPlaylistChecked(parseInt(value))}
@@ -88,28 +108,45 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
                             value={item.id.toString()} />
                         </View>
                       )}
-                      data={playlistsRef.current} />
+                      data={playlists} />
                   </RadioButton.Group>
                 </View>
 
+                <View style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
+                }}>
                   <Button
                     onPress={() => {
                       if (closeOnSubmit) {
                         onClose()
                       }
-                      onSelect(playlistsRef.current.find(p => p.id === playlistChecked) || { id: -1, name: "" })
+                      onSelect(playlists.find(p => p.id === playlistChecked) || { id: -1, name: "" })
                     }}
                     disabled={!isFinite(playlistChecked)}
                     icon="download"
-                    mode="contained">
+                    mode="outlined">
                     download
                   </Button>
+
+                  <View style={{marginVertical: 2}} />
+
+                  <Button
+                    onPress={onOpen}
+                    mode="outlined"
+                    icon="plus">
+                      create playlist
+                  </Button>
+                </View>
               </View>
                 )}
           </View>
         </Surface>
       </Modal>
     </Portal>
+    {render}
+    </>
   )
 }
 
