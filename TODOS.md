@@ -19,7 +19,7 @@
 - [ ] component `Home` should implement action *fetch category*.
 - [ ] folder `./components` should create component `Stats` show consumers data *(network, local file, SQLite tables)*.
 - [ ] component `MusicLocalInline` should implement action delete with `SwipeTrash` component.
-- [ ] folder `./libs` should create file `delete-music.ts` *(from SQLite table)*.
+- [x] folder `./libs` should create file `delete-music.ts` *(from SQLite table)*.
 - [ ] component `PlayBanner` should replace state `forceRefresh` with best practice.
 - [ ] component `PlayBanner` should be refactoring *(185 lines)*, audio context can be provide from a custom hooks.
 - [ ] component `PlayBanner` should implement actions *next music* and *previous music*.
