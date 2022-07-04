@@ -5,6 +5,9 @@ import { useAppDispatch } from "../../hooks/redux"
 import splitText from "../../libs/splitText"
 import { createPlayLocalMusic } from "../../store/actions/playLocalActions"
 import TextCompose from "../TextCompose/TextCompose"
+import useSwipeDelete from "../../hooks/useSwipeDelete"
+import deleteMusic from './../../libs/delete-music'
+import DatabaseContext from "../../Context/DatabaseContext"
 
 interface MusicLocalInlineProps {
   playlist_id: number;
@@ -29,6 +32,25 @@ const MusicLocalInline: React.FC<MusicLocalInlineProps> = ({
 }) => {
   const dispatch = useAppDispatch()
 
+  const database = React.useContext(DatabaseContext);
+
+  const [isDeleted, setIsDeleted] = React.useState<boolean>(false);
+
+  const onDelete = () => {
+    setIsDeleted(true);
+    deleteMusic(database, id, filename)
+    .then(isDeleted => {
+      if(isDeleted) {
+        console.log(`> music ${id}:${title} has been deleted`);
+      } else {
+        console.log(`> file system music has been deleted but remove of entry SQLite has return non-expected result`);
+      }
+    })
+    .catch(error => {
+      console.log("> cant remove music with: ", error);
+    })
+  }
+
   const onPlayMusic = () => {
     dispatch(createPlayLocalMusic({
       filename,
@@ -42,7 +64,7 @@ const MusicLocalInline: React.FC<MusicLocalInlineProps> = ({
     }))
   }
 
-  return (
+  const renderMusicInline = (
     <View>
       <View style={{
         display: "flex",
@@ -76,6 +98,15 @@ const MusicLocalInline: React.FC<MusicLocalInlineProps> = ({
       </View>
     </View>
   )
+
+  const {render} = useSwipeDelete({
+    onDelete,
+    relationalText: `Do you want remove music ${title}`,
+    itemType: "music",
+    children: !isDeleted ? renderMusicInline: <></>
+  });
+
+  return render;
 }
 
 export default MusicLocalInline
