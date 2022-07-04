@@ -38,6 +38,13 @@ export default function useConfirmAction(options: UseConfirmActionOptions) {
   const render = (
     <ConfirmAction
       {...options.props}
+      actionContinue={{
+        ...options.props.actionContinue,
+        onPress: () => {
+          setIsOpen(false);
+          options.props.actionContinue.onPress()
+        }
+      }}
       actionCancel={{
         ...options.props.actionCancel,
         onPress: () => {
