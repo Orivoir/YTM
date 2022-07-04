@@ -25,6 +25,9 @@
 - [ ] component `PlayBanner` should implement actions *next music* and *previous music*.
 - [ ] network requests freeze UI [facebook/react-native #32867](https://github.com/facebook/react-native/issues/32867)
 - [ ] hooks re implements useCanDownload *(currently based on removed code)*
+- [ ] component `SelectPlaylist` should implement action create new playlist
+- [ ] component `SelectPlaylist` at randomly times emit: **Can't perform a React state update on an unmounted component.**
+- [ ] component `Timeline` during action cancel play audio emit: **Can't perform a React state update on an unmounted component.**
 
 ## Render todos:
 
