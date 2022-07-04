@@ -9,12 +9,13 @@ import { Surface, Title, Paragraph, FAB, Divider } from "react-native-paper"
 import { View } from "react-native"
 
 import styles from "./../styles"
-import CreatePlaylist from "../CreatePlaylist/CreatePlaylist"
+// import CreatePlaylist from "../CreatePlaylist/CreatePlaylist"
 import { FlatList } from "react-native-gesture-handler"
 import PlaylistItem from "../PlaylistItem/PlaylistItem"
 import { useAppSelector } from "../../hooks/redux"
 import { useDispatch } from "react-redux"
 import {createAddMultiple} from './../../store/actions/playlistsActions'
+import useCreatePlaylist from "../../hooks/useCreatePlaylist"
 
 
 const Playlists: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Playlists">> = () => {
@@ -24,11 +25,13 @@ const Playlists: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Pla
 
   const database = React.useContext(DatabaseContext);
 
-  const [isOpenCreatePlaylist, setIsOpenCreatePlaylist] = React.useState<boolean>(false)
+  // const [isOpenCreatePlaylist, setIsOpenCreatePlaylist] = React.useState<boolean>(false)
 
-  const onOpenCreatePlaylist = () => {
-    setIsOpenCreatePlaylist(true)
-  }
+  // const onOpenCreatePlaylist = () => {
+  //   setIsOpenCreatePlaylist(true)
+  // }
+
+  const {onOpen, render} = useCreatePlaylist();
 
   React.useEffect(() => {
     getPlaylists(database)
@@ -61,14 +64,15 @@ const Playlists: React.FC<MaterialBottomTabScreenProps<BottomTabParamsList, "Pla
         position: "absolute",
         right: 0
       }}>
-        <FAB icon="plus" onPress={onOpenCreatePlaylist} />
+        <FAB icon="plus" onPress={onOpen} />
       </View>
 
-      <CreatePlaylist
+      {render}
+      {/* <CreatePlaylist
         open={isOpenCreatePlaylist}
         onClose={() => (
           setIsOpenCreatePlaylist(false)
-        )} />
+        )} /> */}
     </Surface>
   )
 }

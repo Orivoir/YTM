@@ -1,5 +1,5 @@
 import * as React from "react"
-import { View } from "react-native"
+import { DeviceEventEmitter, View } from "react-native"
 import { Button, HelperText, Modal, Portal, Surface, TextInput } from "react-native-paper"
 import ModalHeader from "../ModalHeader/ModalHeader"
 
@@ -9,6 +9,7 @@ import { WebSQLDatabase } from "expo-sqlite"
 import DatabaseContext from "../../Context/DatabaseContext"
 import { useAppDispatch } from "../../hooks/redux"
 import {createAddSingle} from './../../store/actions/playlistsActions'
+import { EVENT_CREATE_PLAYLIST } from "../../constant"
 
 interface CreatePlaylistProps {
   open: boolean;
@@ -60,6 +61,8 @@ const CreatePlaylist: React.FC<CreatePlaylistProps> = ({
             console.log("> new playlist created")
 
             const playlistCreated = { id: insertedId, name: playlistName };
+
+            DeviceEventEmitter.emit(EVENT_CREATE_PLAYLIST, playlistCreated)
 
             dispatch(createAddSingle(playlistCreated));
           } else {
