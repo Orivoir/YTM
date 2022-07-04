@@ -34,11 +34,13 @@ export default function useDownload(options: UseDownloadOptions) {
   const filename = React.useRef<string>("");
   const hasEmitDownloadSize = React.useRef<boolean>(false);
   const downloadResumable = React.useRef<null | ReturnType<typeof createDownloadResumable>>(null);
+  const downloadId = React.useRef<string | null>(null);
 
   React.useEffect(() => {
 
     return () => {
       filename.current = "";
+      downloadId.current = null;
       downloadResumable.current?.cancelAsync()
       .then(() => {
         console.log("> download has been silent unload");
@@ -68,6 +70,7 @@ export default function useDownload(options: UseDownloadOptions) {
     }
 
     filename.current = "";
+    downloadId.current = null;
   }
 
   const onUpdateProgress = (params: {
@@ -88,7 +91,8 @@ export default function useDownload(options: UseDownloadOptions) {
         percent: pct,
         totalBytesExpectedToWrite: params.totalBytesExpectedToWrite,
         totalBytesWritten: params.totalBytesWritten,
-        isFinish: (params.totalBytesWritten >= params.totalBytesExpectedToWrite)
+        isFinish: (params.totalBytesWritten >= params.totalBytesExpectedToWrite),
+        id: downloadId.current
       })
 
     } else {
@@ -101,9 +105,10 @@ export default function useDownload(options: UseDownloadOptions) {
   /**
    * @param remote server URI used for download content
    */
-  const startDownload = (remote: string) => {
+  const startDownload = (remote: string, id: string | null = null) => {
 
     filename.current = `${Date.now().toString()}-${Math.random().toString()}.mp3`;
+    downloadId.current = id;
 
     downloadResumable.current = createDownloadResumable(
       remote,
