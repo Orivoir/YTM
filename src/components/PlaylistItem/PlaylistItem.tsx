@@ -23,20 +23,20 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 }) => {
   const database = React.useContext(DatabaseContext)
 
-  const [musics, setMusics] = React.useState<{
-    playlist_id: number,
-    id: number,
-    title: string,
-    ownerName: string,
-    filename: string,
-    publishedAt?: string,
-    thumbnail?: string,
-    ownerThumbnail?: string
-  }[]>([])
+  // const [musics, setMusics] = React.useState<{
+  //   playlist_id: number,
+  //   id: number,
+  //   title: string,
+  //   ownerName: string,
+  //   filename: string,
+  //   publishedAt?: string,
+  //   thumbnail?: string,
+  //   ownerThumbnail?: string
+  // }[]>([])
 
   const [isOpenDetails, setIsOpenDetails] = React.useState<boolean>(false)
 
-  const download = useAppSelector(state => state.download);
+  // const download = useAppSelector(state => state.download);
 
   const [isOpenConfirmDelete, setIsOpenConfirmDelete] = React.useState<boolean>(false)
 
@@ -48,25 +48,25 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 
   const swipableRef = React.useRef<Swipable | null>(null);
 
-  const refreshMusics = () => {
-    getMusicsByPlaylist(database, id)
-    .then(rows => {
-      rows._array.forEach(music => {
-        if (typeof music.thumbnail === "string") {
-          thumbnailRef.current = music.thumbnail
-        }
-      })
+  // const refreshMusics = () => {
+  //   getMusicsByPlaylist(database, id)
+  //   .then(rows => {
+  //     rows._array.forEach(music => {
+  //       if (typeof music.thumbnail === "string") {
+  //         thumbnailRef.current = music.thumbnail
+  //       }
+  //     })
 
-      setMusics(rows._array)
-    })
-    .catch((sqlError) => {
-      console.log("> cant read musics from SQLite with: ", sqlError)
-    })
-  }
+  //     setMusics(rows._array)
+  //   })
+  //   .catch((sqlError) => {
+  //     console.log("> cant read musics from SQLite with: ", sqlError)
+  //   })
+  // }
 
-  React.useEffect(() => {
-    refreshMusics();
-  }, [id, download])
+  // React.useEffect(() => {
+  //   refreshMusics();
+  // }, [id, download])
 
   if(isDeletedRef.current) {
     return <></>;
@@ -139,12 +139,11 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
       </SwipeTrash>
 
       <PlaylistDetails
-        playlistName={name}
+        playlist={{name, id}}
         open={isOpenDetails}
         onClose={() => {
           setIsOpenDetails(false)
-        }}
-        musics={musics} />
+        }} />
 
         <ConfirmAction
           actionCancel={{
@@ -162,7 +161,8 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
               onDeletePlaylist();
             }
           }}
-          title={`playlist contains ${musics.length} musics`}
+          // title={`playlist contains ${musics.length} musics`}
+          title={`playlist contains X musics`}
           relationalText={`Do you want remove playlist ${name} and all musics from this ?`}
           warnCantUndo
           actionType='remove'
