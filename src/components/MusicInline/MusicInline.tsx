@@ -1,12 +1,12 @@
 import * as React from "react"
-import { View } from "react-native"
+import { DeviceEventEmitter, View } from "react-native"
 import { Avatar, HelperText, IconButton, Text, Title } from "react-native-paper"
 import api, { MusicVideoAPI } from "../../api/ytm-api"
-import { useAppDispatch } from "../../hooks/redux"
+import { EVENT_ADD_DOWNLOAD } from "../../constant"
 import useCanDownload from "../../hooks/useCanDownload"
 import useSelectPlaylist from "../../hooks/useSelectPlaylist"
+import music2download from "../../libs/music2download"
 import splitText from "../../libs/splitText"
-import { createAddDownload } from "../../store/actions/downloadReducers"
 import TextCompose from "../TextCompose/TextCompose"
 
 interface MusicInlineProps {
@@ -20,21 +20,15 @@ const MusicInline: React.FC<MusicInlineProps> = ({
     musicTitle: music.title || ""
   })
 
-  const dispatch = useAppDispatch();
-
   const {canDownload} = useCanDownload(music.youtubeId || "");
 
   const onDownload = (playlist: {id: number, name: string}) => {
     console.log("> add new download");
 
-    dispatch(createAddDownload({
-      ownerName: music.artists ? music.artists[0].name : "",
-      playlistId: playlist.id,
-      remote: api.getStreamUrl(music.youtubeId || ""),
-      title: music.title || "",
-      thumbnail: music.thumbnailUrl || "",
-      youtubeId: music.youtubeId || ""
-    }));
+    DeviceEventEmitter.emit(
+      EVENT_ADD_DOWNLOAD,
+      music2download(music, playlist.id)
+    )
 
   }
 

@@ -1,8 +1,7 @@
 import * as React from "react"
-import { ActivityIndicator, View } from "react-native"
-import { useAppDispatch } from "../../hooks/redux"
+import { ActivityIndicator, View, DeviceEventEmitter } from "react-native"
+import { EVENT_ADD_DOWNLOAD } from "../../constant"
 import useSelectPlaylist from "../../hooks/useSelectPlaylist"
-import { createAddDownload } from "../../store/actions/downloadReducers"
 import ArtistInline from "../ArtistInline/ArtistInline"
 import ModalHeader from "../ModalHeader/ModalHeader"
 import api, { ArtistAPI, GetArtistAPI, MusicVideoAPI } from "./../../api/ytm-api"
@@ -17,7 +16,6 @@ const MusicDetails: React.FC<MusicDetailsProps> = ({
   item,
   onClose
 }) => {
-  const dispatch = useAppDispatch()
 
   const artistsRef = React.useRef<ArtistAPI[]>([])
   const abortArtists = React.useRef<AbortController>(new AbortController())
@@ -64,7 +62,7 @@ const MusicDetails: React.FC<MusicDetailsProps> = ({
   const onDownload = (playlist: {id: number, name: string}) => {
     console.log("> add new download")
 
-    dispatch(createAddDownload({
+    DeviceEventEmitter.emit(EVENT_ADD_DOWNLOAD, {
       youtubeId: item.youtubeId || "",
       ownerName: artistsRef?.current[0].name || "",
       remote: api.getStreamUrl(item.youtubeId || ""),
@@ -72,7 +70,7 @@ const MusicDetails: React.FC<MusicDetailsProps> = ({
       thumbnail: item.thumbnailUrl,
       playlistId: playlist.id,
       ownerThumbnail: (artistsRef?.current[0].thumbnails && artistsRef?.current[0].thumbnails.length > 0) ? artistsRef?.current[0].thumbnails[0].url : undefined
-    }))
+    })
   }
 
   return (

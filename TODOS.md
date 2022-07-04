@@ -14,8 +14,8 @@
 - [x] component `Search` should provide API data **step-by-step** *(musics, albums, artists)* replace `Promise.all` with *standalone promises*.
 - [x] component `DownloadBanner` should implement action `onCancelDownload`.
 - [ ] component `DownloadBanner` should be refactoring *(200 lines)*, download context can be provide from a custom hook.
-- [ ] reducers `downloadReducers` should implement a action **"ADD_MULTIPLE_DOWNLOAD"** with a array of `DownloadStateItem` as value.
-- [ ] component `AlbumDetails` should implement action *download all album*.
+- [x] reducers `downloadReducers` should implement a action **"ADD_MULTIPLE_DOWNLOAD"** with a array of `DownloadStateItem` as value.
+- [x] component `AlbumDetails` should implement action *download all album*.
 - [ ] component `Home` should implement action *fetch category*.
 - [ ] folder `./components` should create component `Stats` show consumers data *(network, local file, SQLite tables)*.
 - [ ] component `MusicLocalInline` should implement action delete with `SwipeTrash` component.
@@ -24,6 +24,7 @@
 - [ ] component `PlayBanner` should be refactoring *(185 lines)*, audio context can be provide from a custom hooks.
 - [ ] component `PlayBanner` should implement actions *next music* and *previous music*.
 - [ ] network requests freeze UI [facebook/react-native #32867](https://github.com/facebook/react-native/issues/32867)
+- [ ] hooks re implements useCanDownload *(currently based on removed code)*
 
 ## Render todos:
 

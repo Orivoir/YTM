@@ -1,20 +1,14 @@
 import * as React from "react"
-import { Image, View } from "react-native"
-import { Avatar, IconButton, Surface, Text, ThemeProvider, useTheme } from "react-native-paper"
-import { useAppDispatch, useAppSelector } from "../../hooks/redux"
+import { DeviceEventEmitter, Image, View } from "react-native"
+import { Avatar, IconButton, Surface, Text, useTheme } from "react-native-paper"
 import splitText from "../../libs/splitText"
 import TextCompose from "../TextCompose/TextCompose"
-import type { DownloadStateItem } from "./../../store/reducers/downloadReducers"
-import {
-  createDownloadResumable,
-  documentDirectory
-} from "expo-file-system"
 import createMusic from "./../../libs/create-music"
 import DatabaseContext from "../../Context/DatabaseContext"
-import { createCancelDownload, createFinishDownload } from "../../store/actions/downloadReducers"
-import deleteMusicFileSystem from './../../libs/delete-music-file-system'
-import useDownload, { ProgressState } from "../../hooks/useDownload"
+import useDownload from "../../hooks/useDownload"
 import ProgressBar from './ProgressBar'
+import { EVENT_ADD_DOWNLOAD, EVENT_ADD_DOWNLOADS } from "../../constant"
+import { DownloadStateItem } from "../../libs/music2download"
 
 interface DownloadBannerProps {}
 
@@ -23,73 +17,68 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
   const theme = useTheme()
 
   const database = React.useContext(DatabaseContext)
-  const downloads = useAppSelector(state => state.download)
-  const dispatch = useAppDispatch()
+  const downloads = React.useRef<DownloadStateItem[]>([])
 
-  const currentDownload = React.useRef<DownloadStateItem | null>(null);
   const downloadSizeBytes = React.useRef<number>(0);
-
-  const [isVisible, setIsVisible] = React.useState<boolean>();
+  const [currentDownload, setCurrentDownload] = React.useState<DownloadStateItem | null>(null);
 
   const onDownloadAbort = () => {
+    console.log("> download has been aborted")
     downloadSizeBytes.current = 0;
-    currentDownload.current = null;
-    setIsVisible(false);
+    onNextDownload()
   }
 
   const onDownloadError = (reason: any) => {
     console.log("> download has fail with: ", reason);
     downloadSizeBytes.current = 0;
-    currentDownload.current = null;
+    onNextDownload();
+  }
 
-    setIsVisible(false);
+  const onNextDownload = () => {
+    downloads.current.shift();
+
+    setCurrentDownload(downloads.current[0] || null);
   }
 
   const onDownloadFinish = (result: {filename: string}) => {
-      console.log("> download success")
+    console.log("> download success")
 
-      downloadSizeBytes.current = 0;
+    downloadSizeBytes.current = 0;
 
-      if(currentDownload.current) {
+    if(currentDownload) {
 
-        const {
-          ownerName,
-          playlistId,
-          title,
-          ownerThumbnail,
-          publishedAt,
-          thumbnail,
-          youtubeId
-        } = currentDownload.current;
+      const {
+        ownerName,
+        playlistId,
+        title,
+        ownerThumbnail,
+        publishedAt,
+        thumbnail
+      } = currentDownload;
 
-        createMusic(database, {
-          filename: result.filename,
-          ownerName: ownerName,
-          playlist_id: playlistId,
-          title: title,
-          ownerThumbnail: ownerThumbnail,
-          publishedAt: publishedAt,
-          thumbnail: thumbnail
-        })
-        .then(insertedId => {
-          console.log(`> create new music at SQLite table with id: ${insertedId}`)
-          console.log(`> create local file: ${result.filename}`)
-          // console.log(`> file size: ${(downloadAwaitRef.current.totalBytesExpectedToWrite / 1000000).toFixed(3)}MB`)
+      createMusic(database, {
+        filename: result.filename,
+        ownerName: ownerName,
+        playlist_id: playlistId,
+        title: title,
+        ownerThumbnail: ownerThumbnail,
+        publishedAt: publishedAt,
+        thumbnail: thumbnail
+      })
+      .then(insertedId => {
+        console.log(`> create new music at SQLite table with id: ${insertedId}`)
+        console.log(`> create local file: ${result.filename}`)
+        console.log(`> file size: ${(downloadSizeBytes.current / 1000000).toFixed(3)}MB`)
 
-          currentDownload.current = null;
+        onNextDownload();
+      })
+      .catch((sqliteError) => {
+        console.log("> cant upgrade music SQLite table with: ", sqliteError)
+      })
 
-          dispatch(createFinishDownload(youtubeId || ""))
-        })
-        .catch((sqliteError) => {
-          console.log("> cant upgrade music SQLite table with: ", sqliteError)
-        })
-        .finally(() => {
-          setIsVisible(false);
-        })
-
-      } else {
-        console.log("> Oops, has lost metadata download :-(");
-      }
+    } else {
+      console.log("> Oops, has lost metadata download :-(");
+    }
   }
 
   const onGetDownloadSize = (sizeBytes: number) => {
@@ -108,29 +97,46 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
     onToggleDownloadStatus
   })
 
+  const onPushDownload = (download: DownloadStateItem) => {
+    downloads.current.push(download);
+    afterPushDownload();
+  }
+
+  const onPushDownloads = (_downloads: DownloadStateItem[]) => {
+    downloads.current.push(..._downloads);
+    afterPushDownload();
+  }
+
+  const afterPushDownload = () => {
+    if(!currentDownload) {
+      setCurrentDownload(downloads.current[0] || null);
+    }
+  }
+
   React.useEffect(() => {
 
-    console.log("> downloads state has change");
+    const subscriptionSingle = DeviceEventEmitter.addListener(EVENT_ADD_DOWNLOAD, onPushDownload)
+    const subscriptionMultiple = DeviceEventEmitter.addListener(EVENT_ADD_DOWNLOADS, onPushDownloads)
 
-    if(!currentDownload.current && downloads.length > 0) {
-      console.log("> start new download");
-
-      currentDownload.current = downloads[0];
-
-      startDownload(currentDownload.current.remote);
-
-      setIsVisible(true);
+    return () => {
+      subscriptionSingle.remove();
+      subscriptionMultiple.remove();
     }
+  }, []);
 
-  }, [downloads]);
+  React.useEffect(() => {
+    if(currentDownload) {
+      console.log("> new item to download");
 
+      startDownload(currentDownload.remote);
+    }
+  }, [currentDownload])
 
-  if (!isVisible || !currentDownload.current) {
+  if (!currentDownload) {
     return <></>
   }
 
   const onCancelDownload = () => {
-
     cancelDownload();
   }
 
@@ -140,7 +146,7 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
     ownerThumbnail,
     publishedAt,
     thumbnail
-  } = currentDownload.current;
+  } = currentDownload;
 
   return (
     <Surface>
@@ -196,7 +202,7 @@ const DownloadBanner: React.FC<DownloadBannerProps> = () => {
             <Text style={{
               color: theme.colors.disabled
             }}>
-              {downloads.length - 1} remaining
+              {downloads.current.length - 1} remaining
             </Text>
           </View>
         </View>

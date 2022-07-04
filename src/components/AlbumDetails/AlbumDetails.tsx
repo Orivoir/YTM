@@ -1,6 +1,9 @@
 import * as React from "react"
-import { FlatList, Image, View } from "react-native"
-import { ActivityIndicator, Text } from "react-native-paper"
+import { DeviceEventEmitter, FlatList, Image, View } from "react-native"
+import { ActivityIndicator, Button, Text } from "react-native-paper"
+import { EVENT_ADD_DOWNLOADS } from "../../constant"
+import useSelectPlaylist from "../../hooks/useSelectPlaylist"
+import music2download from "../../libs/music2download"
 import ModalHeader from "../ModalHeader/ModalHeader"
 import MusicInline from "../MusicInline/MusicInline"
 import api, { AlbumPreviewAPI, MusicVideoAPI } from "./../../api/ytm-api"
@@ -14,6 +17,7 @@ const AlbumDetails: React.FC<AlbumDetailsProps> = ({
   item,
   onClose
 }) => {
+
   const [isPendingAlbum, setIsPendingAlbum] = React.useState<boolean>(false)
   const abortAlbum = React.useRef<AbortController>(new AbortController())
 
@@ -41,6 +45,21 @@ const AlbumDetails: React.FC<AlbumDetailsProps> = ({
     }
   }, [item])
 
+  const {onOpen, playlist, render} = useSelectPlaylist({
+    musicTitle: item.title || ""
+  });
+
+  React.useEffect(() => {
+    if(playlist && musicsRef.current) {
+      DeviceEventEmitter.emit(
+        EVENT_ADD_DOWNLOADS,
+        musicsRef.current.map(music => (
+          music2download(music, playlist.id)
+        ))
+      )
+    }
+  }, [playlist])
+
   return (
     <>
     <ModalHeader title={item.title || ""} subtitle={item.artist} onClose={onClose} />
@@ -60,6 +79,12 @@ const AlbumDetails: React.FC<AlbumDetailsProps> = ({
 
         <View>
           <Text>published in {item.year} by {item.artist}</Text>
+        </View>
+
+        <View>
+          <Button icon="download" onPress={onOpen}>
+            Download {!isPendingAlbum ? musicsRef.current.length + " musics": "all"}
+          </Button>
         </View>
       </View>
 
@@ -81,6 +106,8 @@ const AlbumDetails: React.FC<AlbumDetailsProps> = ({
       </View>
 
     </View>
+
+    {render}
     </>
   )
 }
