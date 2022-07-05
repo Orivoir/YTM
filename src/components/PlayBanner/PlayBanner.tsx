@@ -1,12 +1,10 @@
 import * as React from "react"
-import { useAppDispatch, useAppSelector } from "../../hooks/redux"
-import { Audio, AVPlaybackStatus } from "expo-av"
+import { Audio } from "expo-av"
 import { documentDirectory } from "expo-file-system"
-import { Avatar, Button, IconButton, Surface, Text, Title, useTheme } from "react-native-paper"
-import { View, Animated, DeviceEventEmitter } from "react-native"
+import { Avatar, IconButton, Surface, useTheme } from "react-native-paper"
+import { View, DeviceEventEmitter } from "react-native"
 import { Sound } from "expo-av/build/Audio"
 import Timeline from "./Timeline"
-import { createCancelLocalMusic } from "../../store/actions/playLocalActions"
 import splitText from "../../libs/splitText"
 import PlayAction from "./PlayAction"
 
@@ -21,8 +19,6 @@ import { PlayLocalState } from "../../store/reducers/playLocalReducers"
 interface PlayBannerProps {}
 
 const PlayBanner: React.FC<PlayBannerProps> = () => {
-  // const playLocalMusic = useAppSelector(state => state.playLocal)
-  // const dispatch = useAppDispatch()
 
   const soundRef = React.useRef<Sound | null>(null)
   const durationMillisRef = React.useRef<number>(0)
@@ -63,7 +59,6 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
           soundRef.current = sound
           durationMillisRef.current = status.durationMillis || 0
 
-          // forceRefresh(Math.random())
         } else {
           console.log("> cant load file with status: ", status)
         }
@@ -107,7 +102,6 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
     .then(() => {
       console.log("> sound unloaded");
       setPlayLocalMusic(null);
-      // dispatch(createCancelLocalMusic())
     })
     .catch(reason => {
       console.log("> cant unload sound with: ", reason);
