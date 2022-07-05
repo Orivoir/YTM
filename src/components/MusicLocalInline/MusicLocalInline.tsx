@@ -1,13 +1,12 @@
 import * as React from "react"
-import { Image, View } from "react-native"
+import { DeviceEventEmitter, Image, View } from "react-native"
 import { IconButton } from "react-native-paper"
-import { useAppDispatch } from "../../hooks/redux"
 import splitText from "../../libs/splitText"
-import { createPlayLocalMusic } from "../../store/actions/playLocalActions"
 import TextCompose from "../TextCompose/TextCompose"
 import useSwipeDelete from "../../hooks/useSwipeDelete"
 import deleteMusic from './../../libs/delete-music'
 import DatabaseContext from "../../Context/DatabaseContext"
+import { EVENT_PLAY_MUSIC } from "../../constant"
 
 interface MusicLocalInlineProps {
   playlist_id: number;
@@ -30,7 +29,6 @@ const MusicLocalInline: React.FC<MusicLocalInlineProps> = ({
   publishedAt,
   thumbnail
 }) => {
-  const dispatch = useAppDispatch()
 
   const database = React.useContext(DatabaseContext);
 
@@ -52,7 +50,7 @@ const MusicLocalInline: React.FC<MusicLocalInlineProps> = ({
   }
 
   const onPlayMusic = () => {
-    dispatch(createPlayLocalMusic({
+    DeviceEventEmitter.emit(EVENT_PLAY_MUSIC, {
       filename,
       id,
       ownerName,
@@ -61,7 +59,7 @@ const MusicLocalInline: React.FC<MusicLocalInlineProps> = ({
       ownerThumbnail,
       publishedAt,
       thumbnail
-    }))
+    })
   }
 
   const renderMusicInline = (
