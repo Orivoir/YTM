@@ -2,6 +2,8 @@ import { AVPlaybackStatus } from "expo-av"
 import { Sound } from "expo-av/build/Audio"
 import * as React from "react"
 import Slider from '@react-native-community/slider';
+import { DeviceEventEmitter } from "react-native";
+import { EVENT_PLAY_FINISH_MUSIC } from "../../constant";
 
 
 interface TimelineProps {
@@ -21,6 +23,9 @@ const Timeline: React.FC<TimelineProps> = ({
   React.useEffect(() => {
     sound.setOnPlaybackStatusUpdate((playbackStatus: AVPlaybackStatus) => {
       if (playbackStatus.isLoaded) {
+        if (playbackStatus.didJustFinish) {
+          DeviceEventEmitter.emit(EVENT_PLAY_FINISH_MUSIC)
+        }
         setCurrentTime(playbackStatus.positionMillis)
       }
     })
@@ -39,6 +44,9 @@ const Timeline: React.FC<TimelineProps> = ({
         if (isEngagedRef.current) {
           setVirtualCurrentTime(newValue)
         }
+      }}
+      onSlidingComplete={(newValue) => {
+        setVirtualCurrentTime(newValue)
       }}
       onResponderRelease={() => {
         isEngagedRef.current = false

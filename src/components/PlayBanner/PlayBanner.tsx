@@ -15,6 +15,7 @@ import useBatchOffsetTime from "../../hooks/useBatchOffsetTime"
 import VolumeAction from "./VolumeAction"
 import { EVENT_PLAY_MUSIC } from "../../constant"
 import { PlayLocalState } from "../../store/reducers/playLocalReducers"
+import FastOffsetAction from "./FastOffsetAction"
 
 interface PlayBannerProps {}
 
@@ -132,7 +133,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
             )}
           </View>
 
-          <View style={{
+          {/* <View style={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
@@ -158,7 +159,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
                   )}
                 </View>
             </View>
-          </View>
+          </View> */}
 
           {/* controls */}
           <View style={{
@@ -176,19 +177,19 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
                 alignItems: "center"
               }}>
                 <IconButton
-                  onPress={() => onOffsetTime("backward")}
-                  icon="step-backward"
+                  onPress={() => {}}
+                  icon="skip-backward"
                   size={24} />
 
-                <View style={{ marginEnd: 8 }} />
+                <FastOffsetAction onOffsetTime={() => onOffsetTime("backward")} direction="backward" />
 
                 {soundRef.current && <PlayAction sound={soundRef.current} />}
 
-                <View style={{ marginEnd: 8 }} />
+                  <FastOffsetAction onOffsetTime={() => onOffsetTime("forward")} direction="forward" />
 
                 <IconButton
-                  onPress={() => onOffsetTime("forward")}
-                  icon="step-forward"
+                  onPress={() => {}}
+                  icon="skip-forward"
                   size={24} />
               </View>
             </View>
