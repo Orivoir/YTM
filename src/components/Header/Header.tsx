@@ -8,7 +8,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = () => {
   return (
-    <Appbar>
+    <Appbar style={{
+      zIndex: 1
+    }}>
       <Appbar.Content title="YTM" subtitle="YouTube Music" />
     </Appbar>
   )
