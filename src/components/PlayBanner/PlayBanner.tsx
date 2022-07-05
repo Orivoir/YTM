@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux"
 import { Audio, AVPlaybackStatus } from "expo-av"
 import { documentDirectory } from "expo-file-system"
 import { Avatar, Button, IconButton, Surface, Text, Title, useTheme } from "react-native-paper"
-import { View, Animated } from "react-native"
+import { View, Animated, DeviceEventEmitter } from "react-native"
 import { Sound } from "expo-av/build/Audio"
 import Timeline from "./Timeline"
 import { createCancelLocalMusic } from "../../store/actions/playLocalActions"
@@ -15,42 +15,65 @@ import SwipeTrash from "../SwipeTrash/SwipeTrash"
 import TextCompose from "../TextCompose/TextCompose"
 import useBatchOffsetTime from "../../hooks/useBatchOffsetTime"
 import VolumeAction from "./VolumeAction"
+import { EVENT_PLAY_MUSIC } from "../../constant"
+import { PlayLocalState } from "../../store/reducers/playLocalReducers"
 
 interface PlayBannerProps {}
 
 const PlayBanner: React.FC<PlayBannerProps> = () => {
-  const playLocalMusic = useAppSelector(state => state.playLocal)
-  const dispatch = useAppDispatch()
+  // const playLocalMusic = useAppSelector(state => state.playLocal)
+  // const dispatch = useAppDispatch()
 
   const soundRef = React.useRef<Sound | null>(null)
   const durationMillisRef = React.useRef<number>(0)
 
-  const [_, forceRefresh] = React.useState<any>()
+  const [playLocalMusic, setPlayLocalMusic] = React.useState<PlayLocalState | null>(null)
+
+  const [isPendingLoad, setIsPendingLoad] = React.useState<boolean>(false)
 
   const theme = useTheme()
 
   const {onOffsetTime} = useBatchOffsetTime(soundRef.current || null);
 
+  const onPlay = (params: {
+    filename: string,
+    id: number;
+    ownerName: string;
+    playlist_id: number;
+    title: string;
+    ownerThumbnail?: string;
+    publishedAt?: string;
+    thumbnail?: string;
+  }) => {
+
+    setPlayLocalMusic(params);
+  }
+
   React.useEffect(() => {
     if (playLocalMusic) {
+      console.log("> play new audio")
+      setIsPendingLoad(true);
       Audio.Sound.createAsync({
         uri: documentDirectory + playLocalMusic.filename
       })
-        .then(({ sound, status }) => {
-          if (status.isLoaded) {
-            console.log("> load audio with status: ", status)
+      .then(({ sound, status }) => {
+        if (status.isLoaded) {
+          console.log("> sound has been loaded")
 
-            soundRef.current = sound
-            durationMillisRef.current = status.durationMillis || 0
+          soundRef.current = sound
+          durationMillisRef.current = status.durationMillis || 0
 
-            forceRefresh(Math.random())
-          } else {
-            console.log("> cant load file with status: ", status)
-          }
-        })
-        .catch(error => {
-          console.log("> cant open file with: ", error)
-        })
+          // forceRefresh(Math.random())
+        } else {
+          console.log("> cant load file with status: ", status)
+        }
+      })
+      .catch(error => {
+        console.log("> cant open file with: ", error)
+      })
+      .finally(() => {
+        setIsPendingLoad(false);
+      })
     } else {
       console.log("> not audio to play, idle state")
     }
@@ -66,6 +89,14 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
     }
   }, [playLocalMusic])
 
+  React.useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(EVENT_PLAY_MUSIC, onPlay);
+
+    return () => {
+      subscription.remove();
+    }
+  }, [])
+
 
   if (!playLocalMusic) {
     return <></>
@@ -75,7 +106,8 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
     soundRef.current?.unloadAsync()
     .then(() => {
       console.log("> sound unloaded");
-      dispatch(createCancelLocalMusic())
+      setPlayLocalMusic(null);
+      // dispatch(createCancelLocalMusic())
     })
     .catch(reason => {
       console.log("> cant unload sound with: ", reason);
@@ -95,6 +127,7 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
           paddingHorizontal: 8
         }}>
 
+          {/* timeline */}
           <View style={{
             marginBottom: 4
           }}>
@@ -124,11 +157,16 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
                 <View style={{
                   marginStart: 4
                 }}>
-                  <Avatar.Image size={32} source={{ uri: playLocalMusic.ownerThumbnail }} />
+                  {playLocalMusic.ownerThumbnail ? (
+                    <Avatar.Image size={32} source={{ uri: playLocalMusic.ownerThumbnail }} />
+                  ): (
+                    <Avatar.Text size={32} label={playLocalMusic.ownerName.slice(0, 2)} />
+                  )}
                 </View>
             </View>
           </View>
 
+          {/* controls */}
           <View style={{
             display: "flex",
             flexDirection: "row",
