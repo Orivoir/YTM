@@ -10,6 +10,7 @@ import Header from "./Header/Header"
 import SearchItemDetails from "./SearchItemDetails/SearchItemDetails"
 import DownloadBanner from "./DownloadBanner/DownloadBanner"
 import PlayBanner from "./PlayBanner/PlayBanner"
+import SelectPlaylist from "./SelectPlaylist/SelectPlaylist"
 
 export type BottomTabParamsList = {
   Home: undefined,
@@ -30,7 +31,7 @@ const Routing: React.FC<RoutingProps> = () => {
 
       <SearchItemDetails />
       <DownloadBanner />
-
+      <SelectPlaylist />
       <PlayBanner />
 
       <BottomTab.Navigator initialRouteName='Home'>
