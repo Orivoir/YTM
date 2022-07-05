@@ -29,7 +29,7 @@
 - [x] component `SelectPlaylist` at randomly times emit: **Can't perform a React state update on an unmounted component.**
 - [ ] component `Timeline` during action cancel play audio emit: **Can't perform a React state update on an unmounted component.**
 - [ ] component `CreatePlaylist` should reject create many times playlist with same name.
-- [ ] component `AlbumDetails` is laggy/jerky, the `SelectPlaylist` modal should be unique into **App**, render at Routing component and open/close with `DeviceEventEmitter`
+- [x] component `AlbumDetails` is laggy/jerky, the `SelectPlaylist` modal should be unique into **App**, render at Routing component and open/close with `DeviceEventEmitter`
 - [ ] component `PlayBanner` *crash* during play file and remove file at same time, remove music action should **emit event** with `DeviceEventEmitter` **before** remove file system
 
 ## Render todos:

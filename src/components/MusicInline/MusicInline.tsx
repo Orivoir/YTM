@@ -1,8 +1,8 @@
 import * as React from "react"
-import { DeviceEventEmitter, View } from "react-native"
+import { DeviceEventEmitter, EmitterSubscription, View } from "react-native"
 import { Avatar, IconButton} from "react-native-paper"
 import type { MusicVideoAPI } from "../../api/ytm-api"
-import { EVENT_ADD_DOWNLOAD } from "../../constant"
+import { EVENT_ADD_DOWNLOAD, EVENT_SELECTED_PLAYLIST, EVENT_SELECT_PLAYLIST } from "../../constant"
 import useDownloadStatus from "../../hooks/useDownloadStatus"
 import useSelectPlaylist from "../../hooks/useSelectPlaylist"
 import music2download from "../../libs/music2download"
@@ -17,11 +17,17 @@ interface MusicInlineProps {
 const MusicInline: React.FC<MusicInlineProps> = ({
   music
 }) => {
-  const { onOpen, playlist, render } = useSelectPlaylist({
-    musicTitle: music.title || ""
-  })
+  // const { onOpen, playlist, render } = useSelectPlaylist({
+  //   musicTitle: music.title || ""
+  // })
 
   const {canDownload, progress} = useDownloadStatus(music.youtubeId || "");
+
+  // const playlistSelectedSubscriptionRef = React.useRef<EmitterSubscription | null>(null);
+
+  const {onOpen, playlist} = useSelectPlaylist({
+    musicTitle: music.title || ""
+  });
 
   const onDownload = (playlist: {id: number, name: string}) => {
     console.log("> add new download");
@@ -34,8 +40,8 @@ const MusicInline: React.FC<MusicInlineProps> = ({
   }
 
   React.useEffect(() => {
-    if (playlist !== null) {
-      onDownload(playlist)
+    if(playlist) {
+      onDownload(playlist);
     }
   }, [playlist])
 
@@ -69,8 +75,6 @@ const MusicInline: React.FC<MusicInlineProps> = ({
       </View>
 
     </View>
-
-    {render}
     </>
   )
 }

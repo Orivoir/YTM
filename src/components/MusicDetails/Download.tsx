@@ -2,7 +2,6 @@ import * as React from "react"
 import { DeviceEventEmitter, Image, View } from "react-native"
 import { HelperText, IconButton, useTheme } from "react-native-paper"
 import { EVENT_DOWNLOAD_PROGRESS_UPDATE } from "../../constant";
-import CircularProgress from 'react-native-circular-progress-indicator'
 import CircularProgressDownload from "../CircularProgressDownload/CircularProgressDownload";
 
 interface DownloadProps {

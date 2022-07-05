@@ -20,7 +20,7 @@ const MusicDetails: React.FC<MusicDetailsProps> = ({
   const artistsRef = React.useRef<ArtistAPI[]>([])
   const abortArtists = React.useRef<AbortController>(new AbortController())
 
-  const { onOpen, playlist, render } = useSelectPlaylist({
+  const { onOpen, playlist } = useSelectPlaylist({
     musicTitle: item.title || ""
   })
 
@@ -106,8 +106,6 @@ const MusicDetails: React.FC<MusicDetailsProps> = ({
             )}
       </View>
     </View>
-
-    {render}
     </>
   )
 }
