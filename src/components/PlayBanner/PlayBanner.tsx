@@ -72,7 +72,14 @@ const PlayBanner: React.FC<PlayBannerProps> = () => {
   }
 
   const onCancel = () => {
-    dispatch(createCancelLocalMusic())
+    soundRef.current?.unloadAsync()
+    .then(() => {
+      console.log("> sound unloaded");
+      dispatch(createCancelLocalMusic())
+    })
+    .catch(reason => {
+      console.log("> cant unload sound with: ", reason);
+    })
   }
 
   return (
