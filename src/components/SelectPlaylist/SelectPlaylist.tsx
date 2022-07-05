@@ -1,7 +1,7 @@
 import * as React from "react"
-import { DeviceEventEmitter, EmitterSubscription, FlatList, View } from "react-native"
+import { DeviceEventEmitter, FlatList, View } from "react-native"
 import { ActivityIndicator, Button, Modal, Portal, RadioButton, Surface, Text } from "react-native-paper"
-import { EVENT_CREATE_PLAYLIST } from "../../constant"
+import { EVENT_SELECTED_PLAYLIST, EVENT_SELECT_PLAYLIST } from "../../constant"
 import DatabaseContext from "../../Context/DatabaseContext"
 import useCreatePlaylist from "../../hooks/useCreatePlaylist"
 import getPlaylists from "../../libs/get-playlists"
@@ -9,47 +9,63 @@ import splitText from "../../libs/splitText"
 import ModalHeader from "../ModalHeader/ModalHeader"
 import styles from "../styles"
 
-interface SelectPlaylistProps {
-  closeOnSubmit?: boolean;
-  open: boolean;
-  musicTitle: string;
-  onClose: () => void;
-  onSelect: (playlist: {id: number, name: string}) => void;
-}
+interface SelectPlaylistProps {}
 
-const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
-  open,
-  onClose,
-  musicTitle,
-  onSelect,
-  closeOnSubmit = true
-}) => {
+const SelectPlaylist: React.FC<SelectPlaylistProps> = () => {
   const database = React.useContext(DatabaseContext)
 
-  const [playlists, setPlaylists] = React.useState<{id: number, name: string}[]>([])
+  const [isOpen, setIsOpen] = React.useState<boolean>(false);
   const [isPending, setIsPending] = React.useState<boolean>(false)
-  const subscriptionRef = React.useRef<EmitterSubscription | null>(null)
-
   const [playlistChecked, setPlaylistChecked] = React.useState<number>(Infinity)
 
   const {onOpen, render} = useCreatePlaylist();
 
-  const onNewPlaylist = (playlist: {id: number, name: string}) => {
-    setPlaylists(currentPlaylists => ([
-      ...currentPlaylists,
-      playlist
-    ]))
+
+  const playlistsRef = React.useRef<{id: number, name: string}[]>([])
+  const musicTitleRef = React.useRef<string>("");
+
+  const playlists = playlistsRef.current;
+  const musicTitle = musicTitleRef.current;
+
+
+  const onSelect = (params: {
+    musicTitle: string,
+    id: string
+  }) => {
+    musicTitleRef.current = params.musicTitle;
+    setIsOpen(true);
+  }
+
+  const onSelected = () => {
+    console.log("> on selected trigger")
+    DeviceEventEmitter.emit(EVENT_SELECTED_PLAYLIST, {
+      playlist: playlists.find(p => p.id === playlistChecked) || null
+    });
+
+    musicTitleRef.current = "";
+
+    setPlaylistChecked(Infinity);
+    onClose();
   }
 
   React.useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(EVENT_SELECT_PLAYLIST, onSelect);
 
-    if(open) {
-      subscriptionRef.current = DeviceEventEmitter.addListener(EVENT_CREATE_PLAYLIST, onNewPlaylist)
+    return () => {
+      subscription.remove();
+    }
+
+  }, []);
+
+  React.useEffect(() => {
+
+    if(isOpen) {
+      console.log("> fetch playlists at SQLite");
       setIsPending(true)
 
       getPlaylists(database)
         .then(rows => {
-          setPlaylists(rows._array);
+          playlistsRef.current = rows._array;
         })
         .catch(error => {
           console.log("> cant read playlists from SQLite with: ", error)
@@ -58,19 +74,22 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
           setIsPending(false)
         })
     } else {
-      subscriptionRef.current?.remove()
+      console.log("> skip fetch playlists");
     }
-  }, [open])
+  }, [isOpen])
 
+  const onClose = () => {
+    setIsOpen(false);
+  }
 
   return (
     <>
     <Portal>
-      <Modal visible={open} onDismiss={onClose}>
+      <Modal visible={isOpen} onDismiss={onClose}>
         <Surface style={styles.modalContainer}>
           <ModalHeader
             title="Select playlist"
-            subtitle={`${splitText(musicTitle, 15)} => ${playlists.find(p => p.id === playlistChecked)?.name || "?"}`}
+            subtitle={`${splitText(musicTitle || "", 15)} => ${playlists.find(p => p.id === playlistChecked)?.name || "?"}`}
             onClose={onClose} />
 
           <View style={{
@@ -79,7 +98,6 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
             {isPending
               ? (
               <View style={{
-                flex: 1,
                 alignItems: "center",
                 justifyContent: "center"
               }}>
@@ -87,9 +105,7 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
               </View>
                 )
               : (
-              <View style={{
-                marginHorizontal: 4
-              }}>
+              <View>
                 <View style={{ marginBottom: 4 }}>
                   <RadioButton.Group
                     onValueChange={value => setPlaylistChecked(parseInt(value))}
@@ -118,12 +134,7 @@ const SelectPlaylist: React.FC<SelectPlaylistProps> = ({
                   justifyContent: "space-between"
                 }}>
                   <Button
-                    onPress={() => {
-                      if (closeOnSubmit) {
-                        onClose()
-                      }
-                      onSelect(playlists.find(p => p.id === playlistChecked) || { id: -1, name: "" })
-                    }}
+                    onPress={onSelected}
                     disabled={!isFinite(playlistChecked)}
                     icon="download"
                     mode="outlined">
